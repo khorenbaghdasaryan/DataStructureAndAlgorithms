@@ -4,15 +4,130 @@ using System.Text;
 
 namespace Collection
 {
-    class LinkedList
+
+    class Stacks
     {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //   
+
+        //This feature makes it LIFO data structure.LIFO stands
+        //for Last-in-first-out. Here, the element which is placed
+        //(inserted or added) last, is accessed first.In stack terminology,
+        //insertion operation is called PUSH operation and removal operation
+        //is called POP operation.
+        public void CreateSteack()
+        {
+            Stack<string> numbers = new Stack<string>();
+            numbers.Push("One");
+            numbers.Push("Two");
+            numbers.Push("Three");
+            numbers.Push("Four");
+            numbers.Push("Five");
+
+            // A stack can be enumerated without disturbing its contents.
+            foreach (string number in numbers)         
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nPopping '{numbers.Pop()}'");
+            Console.WriteLine($"Peek at next item to destack: {numbers.Peek()}");
+            Console.WriteLine($"Popping '{numbers.Pop()}'");
+
+            // Create a copy of the stack, using the ToArray method and the
+            // constructor that accepts an IEnumerable<T>.
+            Stack<string> stack2 = new Stack<string>(numbers.ToArray());
+
+            Console.WriteLine("\n Contents of the first copy:");
+            foreach (string number in stack2)
+                Console.WriteLine(number);
+
+            // Create an array twice the size of the stack and copy the
+            // elements of the stack, starting at the middle of the
+            // array.
+            string[] array2 = new string[numbers.Count * 2];
+            numbers.CopyTo(array2, numbers.Count);
+
+            // Create a second stack, using the constructor that accepts an
+            // IEnumerable(Of T).
+            Stack<string> stack3 = new Stack<string>(array2);
+
+            Console.WriteLine("\nContents of the second copy, with duplicates and nulls:");
+            foreach (string number in stack3)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nstack2.Contains(\"four\") = {stack2.Contains("four")}");
+
+            Console.WriteLine("\nstack2.Clear()");
+            stack2.Clear();
+            Console.WriteLine($"\nnstack2.Count = {stack2.Count}");
+        }
+    }
+
+    class Queues
+    {
+        public void CreateQueue()
+        {
+            Queue<string> numbers = new Queue<string>();
+            numbers.Enqueue("one");
+            numbers.Enqueue("two");
+            numbers.Enqueue("three");
+            numbers.Enqueue("four");
+            numbers.Enqueue("five");
+
+            // A queue can be enumerated without disturbing its contents.
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nDequeuing '{numbers.Dequeue()}'");
+            Console.WriteLine($"Peek at next item to dequeue: {numbers.Dequeue()}");
+            Console.WriteLine($"Dequeuing '{numbers.Dequeue()}'");
+
+            // Create a copy of the queue, using the ToArray method and the
+            // constructor that accepts an IEnumerable<T>.
+            Queue<string> queueCopy = new Queue<string>(numbers.ToArray());
+
+            Console.WriteLine("\nContents of the first copy:");
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            // Create an array twice the size of the queue and copy the
+            // elements of the queue, starting at the middle of the
+            // array.
+            string[] array2 = new string[numbers.Count * 2];
+            numbers.CopyTo(array2, numbers.Count);
+
+            foreach (string number in array2)
+                Console.WriteLine(number);
+
+            // Create a second queue, using the constructor that accepts an
+            // IEnumerable(Of T).
+            Queue<string> queueCopy2 = new Queue<string>(array2);
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nqueueCopy.Contains(\"four\") = {queueCopy.Contains("four")}");
+            Console.WriteLine("\nqueueCopy.Clear()");
+            queueCopy.Clear();
+            Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
+        }
+    }
+    class LinkedLists
+    {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //                                         AddLast  O(1)               |                                                |
+        //                                         AddAfter O(1)               |                                                |
+
+        //LinkedList<T> Represents a doubly linked list.
+        //LinkedListNode<T> Represents a node in a LinkedList<T>. This class cannot be inherited.
+
         public void CreateLinkedList()
         {
-            //Collection                      AVERAGE                              |                Worst
-            //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion
-            //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)
-            //                                         AddLast  O(1)               |
-            //                                         AddAfter O(1)               |
+           
             // Create the link list.
             string[] words = { "the", "fox", "jumps", "over", "the", "dog" };
             LinkedList<string> sentence = new LinkedList<string>(words);
@@ -168,7 +283,7 @@ namespace Collection
     {
         static void Main(string[] args)
         {
-            new LinkedList().CreateLinkedList();
+            new Queues().CreateQueue();
         }
     }
 }
