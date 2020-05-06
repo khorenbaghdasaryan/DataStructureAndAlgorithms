@@ -8,6 +8,11 @@ namespace Collection
     {
         public void CreateLinkedList()
         {
+            //Collection                      AVERAGE                              |                Worst
+            //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion
+            //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)
+            //                                         AddLast  O(1)               |
+            //                                         AddAfter O(1)               |
             // Create the link list.
             string[] words = { "the", "fox", "jumps", "over", "the", "dog" };
             LinkedList<string> sentence = new LinkedList<string>(words);
