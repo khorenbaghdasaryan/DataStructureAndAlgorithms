@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Collection
 {
@@ -25,7 +26,7 @@ namespace Collection
             Display(sentence, "Test 2: Move first node to be last node:");
 
             // Change the last node to 'yesterday'.
-            sentence.RemoveFirst();
+            sentence.RemoveLast();
             sentence.AddLast("yesterday");
             Display(sentence, "Test 3: Change the last node to 'yesterday':");
 
@@ -39,11 +40,70 @@ namespace Collection
             sentence.RemoveFirst();
             LinkedListNode<string> current = sentence.FindLast("the");
             IndicateNode(current, "Test 5: Indicate last occurence of 'the':");
+
+            // Add 'lazy' and 'old' after 'the' (the LinkedListNode named current).
+            sentence.AddAfter(current, "old");
+            sentence.AddAfter(current, "lazy");
+            IndicateNode(current, "Test 6: Add 'lazy' and 'old' after 'the':");
+
+            // Indicate 'fox' node.
+            current = sentence.Find("fox");
+            IndicateNode(current, "Test 7: Indicate the 'fox' node:");
+
+            // Add 'quick' and 'brown' before 'fox':
+            sentence.AddBefore(current, "quick");
+            sentence.AddBefore(current, "brown");
+            IndicateNode(current, "Test 8: Add 'quick' and 'brown' before 'fox':");
+
+            // Keep a reference to the current node, 'fox',
+            // and to the previous node in the list. Indicate the 'dog' node.
+            mark1 = current;
+            LinkedListNode<string> mark2 = current.Previous;
+            current = sentence.Find("dog");
+            IndicateNode(current, "Test 9: Indicate the 'dog' node:");
+
+            // The AddBefore method throws an InvalidOperationException
+            // if you try to add a node that already belongs to a list.
+            Console.WriteLine("Test 10: Throw exception by adding node (fox) already in the list:");
+            try
+            {
+                sentence.AddBefore(current, mark1);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Exception message: {ex.Message}");
+            }
+            Console.WriteLine();
+
         }
 
-        private void IndicateNode(LinkedListNode<string> current, string v)
+        private void IndicateNode(LinkedListNode<string> node, string test)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(test);
+            if (node.List == null)
+            {
+                Console.WriteLine($"Node '{node.Value}' is not in the list.\n");
+                return;
+            }
+
+            StringBuilder result = new StringBuilder("(" + node.Value + ")");
+            LinkedListNode<string> nodeP = node.Previous;
+
+            while (nodeP != null)
+            {
+                result.Insert(0, nodeP.Value + " ");
+                nodeP = nodeP.Previous;
+            }
+
+            node = node.Next;
+            while (node != null)
+            {
+                result.Append(" " + node.Value);
+                node = node.Next;
+            }
+
+            Console.WriteLine(result);
+            Console.WriteLine();
         }
 
         private void Display(LinkedList<string> words, string test)
