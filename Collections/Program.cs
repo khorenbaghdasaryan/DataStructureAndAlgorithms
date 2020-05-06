@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace Collection
         //                                                             Time Complexities                                        |   Space Complexities
         //Collection                      AVERAGE                              |                Worst                           |
         //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
-        //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //Stacks<T>          O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
         //   
 
         //This feature makes it LIFO data structure.LIFO stands
@@ -67,6 +68,10 @@ namespace Collection
 
     class Queues
     {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //Queue<T>           O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
         public void CreateQueue()
         {
             Queue<string> numbers = new Queue<string>();
@@ -111,6 +116,108 @@ namespace Collection
             Console.WriteLine("\nqueueCopy.Clear()");
             queueCopy.Clear();
             Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
+        }
+    }
+
+    class LinearSearches
+    {
+        public int linearSearch(int[] arr, int key)
+        {
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i] == key)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+    }
+    class Hashtables
+    {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //Hashtable          N/A        O(1)       O(1)             O(1)       |  N/A        O(n)       O(n)       O(n)         |           O(n)
+        //                                         AddLast  O(1)               |                                                |
+        //                                         AddAfter O(1)               |                                                |
+        public void CreateHashtable()
+        {
+            // Create a new hash table.
+            Hashtable openWith = new Hashtable();
+
+            // Add some elements to the hash table. There are no
+            // duplicate keys, but some of the values are duplicates.
+            openWith.Add("txt", "notepad.exe");
+            openWith.Add("bmp", "paint.exe");
+            openWith.Add("dib", "paint.exe");
+            openWith.Add("rtf", "wordpad.exe");
+
+            // The Add method throws an exception if the new key is
+            // already in the hash table.
+            try
+            {
+                openWith.Add("txt", "winword.exe");
+            }
+            catch
+            {
+                Console.WriteLine("An element with Key = \"txt\" already exists.");
+            }
+
+            // The Item property is the default property, so you
+            // can omit its name when accessing elements.
+            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+
+            // The default Item property can be used to change the value
+            // associated with a key.
+            openWith["rtf"] = "winword.exe";
+            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+
+            // If a key does not exist, setting the default Item property
+            // for that key adds a new key/value pair.
+            openWith["doc"] = "winword.exe";
+
+            // ContainsKey can be used to test keys before inserting
+            // them.
+            if (!openWith.ContainsKey("ht"))
+            {
+                openWith.Add("ht", "hypertrm.exe");
+                Console.WriteLine($"Value added for key = \"ht\": {openWith["ht"]}.");
+            }
+
+            // When you use foreach to enumerate hash table elements,
+            // the elements are retrieved as KeyValuePair objects.
+            Console.WriteLine();
+            foreach (DictionaryEntry de in openWith)
+                Console.WriteLine($"Key = {de.Key}, Value = {de.Value}");
+
+            // To get the values alone, use the Values property.
+            ICollection valueColl = openWith.Values;
+
+            // The elements of the ValueCollection are strongly typed
+            // with the type that was specified for hash table values.
+            Console.WriteLine();
+            foreach (string s in valueColl)
+                Console.WriteLine($"Value = {s}");
+
+            // To get the keys alone, use the Keys property.
+            ICollection keyColl = openWith.Keys;
+
+            // The elements of the KeyCollection are strongly typed
+            // with the type that was specified for hash table keys.
+            Console.WriteLine();
+            foreach (string s in keyColl)
+                Console.WriteLine($"Key = {s}");
+
+            // Use the Remove method to remove a key/value pair.
+            Console.WriteLine("\nRemove(\"doc\")");
+
+            openWith.Remove("doc");
+
+            if (!openWith.ContainsKey("doc"))
+                Console.WriteLine("Key \"doc\" is not found.");
+
+
         }
     }
     class LinkedLists
@@ -283,7 +390,7 @@ namespace Collection
     {
         static void Main(string[] args)
         {
-            new Queues().CreateQueue();
+            new Hashtables().CreateHashtable();
         }
     }
 }
