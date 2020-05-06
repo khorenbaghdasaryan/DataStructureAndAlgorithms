@@ -75,6 +75,48 @@ namespace Collection
             }
             Console.WriteLine();
 
+            // Remove the node referred to by mark1, and then add it
+            // before the node referred to by current.
+            // Indicate the node referred to by current.
+            sentence.Remove(mark1);
+            sentence.AddBefore(current, mark1);
+            IndicateNode(current, "Test 11: Move a referenced node (fox) before the current node (dog):");
+
+            // Remove the node referred to by current.
+            sentence.Remove(current);
+            IndicateNode(current, "Test 12: Remove current node (dog) and attempt to indicate it:");
+
+            // Add the node after the node referred to by mark2.
+            sentence.AddAfter(mark2, current);
+            IndicateNode(current, "Test 13: Add node removed in test 11 after a referenced node (brown):");
+
+            // The Remove method finds and removes the
+            // first node that that has the specified value.
+            sentence.Remove("old");
+            Display(sentence, "Test 14: Remove node that has the value 'old':");
+
+            // When the linked list is cast to ICollection(Of String),
+            // the Add method adds a node to the end of the list.
+            sentence.RemoveLast();
+            ICollection<string> icoll = sentence;
+            icoll.Add("rhinoceros");
+            Display(sentence, "Test 15: Remove last node, cast to ICollection, and add 'rhinoceros':");
+
+            Console.WriteLine("Test 16: Copy the list to an array:");
+            // Create an array with the same number of
+            // elements as the inked list.
+            string[] sArray = new string[sentence.Count];
+            sentence.CopyTo(sArray, 0);
+
+            foreach (string item in sArray)
+            {
+                Console.WriteLine(item);
+            }
+
+            // Release all the nodes.
+            sentence.Clear();
+            Console.WriteLine();
+            Console.WriteLine($"Test 17: Clear linked list. Contains 'jumps' = {sentence.Contains("jumps")}");
         }
 
         private void IndicateNode(LinkedListNode<string> node, string test)
