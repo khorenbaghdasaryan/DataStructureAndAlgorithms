@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 namespace Collection
 {
@@ -42,7 +43,11 @@ namespace Collection
         //                   Access     Search     Insert     Deletion   |  Access     Search     Insert     Deletion     |
         //Stacks<T>                                                      |                                                |          
         //   
-
+        //The BitArray class is a collection class in which the capacity is always the same as the count.Elements are added to a BitArray by increasing
+        //the Length property; elements are deleted by decreasing the Length property.The size of a BitArray is controlled by the client; indexing past
+        //the end of the BitArray throws an ArgumentException.The BitArray class provides methods that are not found in other collections, including those
+        //that allow multiple elements to be modified at once using a filter, such as And, Or, Xor , Not, and SetAll.
+        //
         public void CreateBitArray()
         {
             BitArray myBA1 = new BitArray(5);
@@ -314,10 +319,171 @@ namespace Collection
 
             if (!openWith.ContainsKey("doc"))
                 Console.WriteLine("Key \"doc\" is not found.");
+        }
+
+        [Obsolete]
+        public void CaseInsensitiveComparer()
+        {
+            // Create a Hashtable using the default hash code provider and the default comparer.
+            Hashtable myHT1 = new Hashtable();
+            myHT1.Add("FIRST", "Hello");
+            myHT1.Add("SECOND", "World");
+            myHT1.Add("THIRD", "!");
+
+            // Create a Hashtable using a case-insensitive code provider and a case-insensitive comparer,
+            // based on the culture of the current thread.
+            Hashtable myHT2 = new Hashtable(new CaseInsensitiveHashCodeProvider(), new CaseInsensitiveComparer());
+            myHT2.Add("FIRST", "Hello");
+            myHT2.Add("SECOND", "World");
+            myHT2.Add("THIRD", "!");
+
+            // Create a Hashtable using a case-insensitive code provider and a case-insensitive comparer,
+            // based on the Turkish culture (tr-TR), where "I" is not the uppercase version of "i".
+            CultureInfo myCulture = new CultureInfo("tr-TR");
+            Hashtable myHT3 = new Hashtable(new CaseInsensitiveHashCodeProvider(myCulture), new CaseInsensitiveComparer(myCulture));
 
 
+            // Search for a key in each hashtable.
+            Console.WriteLine($"first is in myHT1: {myHT1.ContainsKey("first")} ");
+            Console.WriteLine($"first is in myHT2: {myHT2.ContainsKey("first")} ");
+            Console.WriteLine("first is in myHT3: {0}", myHT3.ContainsKey("first"));
         }
     }
+    class Int16Collection : CollectionBase
+    {
+        public Int16 this[int index]
+        {
+            get
+            {
+                return ((Int16)List[index]);
+            }
+            set
+            {
+                List[index] = value;
+            }
+        }
+
+        public int Add(Int16 value)
+        {
+            return (List.Add(value));
+        }
+
+        public int IndexOf(Int16 value)
+        {
+            return (List.IndexOf(value));
+        }
+
+        public void Insert(int index, Int16 value)
+        {
+            List.Insert(index, value);
+        }
+
+        public void Remove(Int16 value)
+        {
+            List.Remove(value);
+        }
+
+        public bool Contains(Int16 value)
+        {
+            // If value is not of type Int16, this will return false.
+            return (List.Contains(value));
+        }
+
+        protected override void OnInsert(int index, Object value)
+        {
+            // Insert additional code to be run only when inserting values.
+        }
+
+        protected override void OnRemove(int index, Object value)
+        {
+            // Insert additional code to be run only when removing values.
+        }
+
+        protected override void OnSet(int index, Object oldValue, Object newValue)
+        {
+            // Insert additional code to be run only when setting values.
+        }
+
+        protected override void OnValidate(Object value)
+        {
+            if (value.GetType() != typeof(System.Int16))
+                throw new ArgumentException("value must be of type Int16.", "value");
+        }
+
+        public void Start()
+        {
+            // Create and initialize a new CollectionBase.
+            Int16Collection myI16 = new Int16Collection();
+
+            // Add elements to the collection.
+            myI16.Add((Int16)1);
+            myI16.Add((Int16)2);
+            myI16.Add((Int16)3);
+            myI16.Add((Int16)5);
+            myI16.Add((Int16)7);
+
+            // Display the contents of the collection using foreach. This is the preferred method.
+            Console.WriteLine("Contents of the collection (using foreach):");
+            PrintValues1(myI16);
+
+            // Display the contents of the collection using the enumerator.
+            Console.WriteLine("Contents of the collection (using enumerator):");
+            PrintValues2(myI16);
+
+            // Display the contents of the collection using the Count property and the Item property.
+            Console.WriteLine("Initial contents of the collection (using Count and Item):");
+            PrintIndexAndValues(myI16);
+
+            // Search the collection with Contains and IndexOf.
+            Console.WriteLine("Contains 3: {0}", myI16.Contains(3));
+            Console.WriteLine("2 is at index {0}.", myI16.IndexOf(2));
+            Console.WriteLine();
+
+            // Insert an element into the collection at index 3.
+            myI16.Insert(3, (Int16)13);
+            Console.WriteLine("Contents of the collection after inserting at index 3:");
+            PrintIndexAndValues(myI16);
+
+            // Get and set an element using the index.
+            myI16[4] = 123;
+            Console.WriteLine("Contents of the collection after setting the element at index 4 to 123:");
+            PrintIndexAndValues(myI16);
+
+            // Remove an element from the collection.
+            myI16.Remove((Int16)2);
+
+            // Display the contents of the collection using the Count property and the Item property.
+            Console.WriteLine("Contents of the collection after removing the element 2:");
+            PrintIndexAndValues(myI16);
+        }
+
+        // Uses the Count property and the Item property.
+        public static void PrintIndexAndValues(Int16Collection myCol)
+        {
+            for (int i = 0; i < myCol.Count; i++)
+                Console.WriteLine("   [{0}]:   {1}", i, myCol[i]);
+            Console.WriteLine();
+        }
+
+        // Uses the foreach statement which hides the complexity of the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public static void PrintValues1(Int16Collection myCol)
+        {
+            foreach (Int16 i16 in myCol)
+                Console.WriteLine("   {0}", i16);
+            Console.WriteLine();
+        }
+
+        // Uses the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public static void PrintValues2(Int16Collection myCol)
+        {
+            System.Collections.IEnumerator myEnumerator = myCol.GetEnumerator();
+            while (myEnumerator.MoveNext())
+                Console.WriteLine("   {0}", myEnumerator.Current);
+            Console.WriteLine();
+        }
+    }   
     class LinkedLists
     {
         //                                                             Time Complexities                                        |   Space Complexities
@@ -486,9 +652,10 @@ namespace Collection
     }
     class Program
     {
+        [Obsolete]
         static void Main(string[] args)
         {
-            new BitArrays().CreateBitArray();
+            new Int16Collection().Start();
         }
     }
 }
