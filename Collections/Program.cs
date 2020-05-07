@@ -5,7 +5,107 @@ using System.Text;
 
 namespace Collection
 {
+    class ArrayLists
+    {
+        //                                                      Time Complexities                                         |   Space Complexities
+        //Collection                      AVERAGE                        |                Worst                           |
+        //                   Access     Search     Insert     Deletion   |  Access     Search     Insert     Deletion     |
+        //Stacks<T>          O(1)       O(n)       O(n)       O(1)       |  O(1)       O(n)       O(n)       O(n)         |          O(n)
+        //   
 
+        public void CreateArrayList()
+        {
+            // Creates and initializes a new ArrayList.
+            ArrayList myAL = new ArrayList();
+            myAL.Add("Hello");
+            myAL.Add("World");
+            myAL.Add("!");
+
+            // Displays the properties and values of the ArrayList.
+            Console.WriteLine("myAL");
+            Console.WriteLine($" Count: {myAL.Count} ");
+            Console.WriteLine($" Capacity: {myAL.Capacity} ");
+            Console.WriteLine(" Values:");
+            PrintValues(myAL);
+        }
+        private void PrintValues(IEnumerable myList)
+        {
+            foreach (Object obj in myList)
+                Console.Write($"   {obj}" );
+            Console.WriteLine();
+        }
+    }
+    class BitArrays
+    {
+        //                                                      Time Complexities                                         |   Space Complexities
+        //Collection                      AVERAGE                        |                Worst                           |
+        //                   Access     Search     Insert     Deletion   |  Access     Search     Insert     Deletion     |
+        //Stacks<T>                                                      |                                                |          
+        //   
+
+        public void CreateBitArray()
+        {
+            BitArray myBA1 = new BitArray(5);
+
+            BitArray myBA2 = new BitArray(5, true);
+
+            byte[] myBytes = new byte[5] { 1, 2, 3, 4, 5 };
+            BitArray myBA3 = new BitArray(myBytes);
+
+            bool[] myBools = new bool[5] { true, false, true, true, false };
+            BitArray myBA4 = new BitArray(myBools);
+
+            int[] myInts = new int[5] { 6, 7, 8, 9, 10 };
+            BitArray myBA5 = new BitArray(myInts);
+
+            //Displays the properties and values of the BitArrays.
+            Console.WriteLine("myBA1");
+            Console.WriteLine("   Count:    {0}", myBA1.Count);
+            Console.WriteLine("   Length:   {0}", myBA1.Length);
+            Console.WriteLine("   Values:");
+            PrintValues(myBA1, 8);
+
+            Console.WriteLine("myBA2");
+            Console.WriteLine("   Count:    {0}", myBA2.Count);
+            Console.WriteLine("   Length:   {0}", myBA2.Length);
+            Console.WriteLine("   Values:");
+            PrintValues(myBA2, 8);
+
+            Console.WriteLine("myBA3");
+            Console.WriteLine("   Count:    {0}", myBA3.Count);
+            Console.WriteLine("   Length:   {0}", myBA3.Length);
+            Console.WriteLine("   Values:");
+            PrintValues(myBA3, 8);
+
+            Console.WriteLine("myBA4");
+            Console.WriteLine("   Count:    {0}", myBA4.Count);
+            Console.WriteLine("   Length:   {0}", myBA4.Length);
+            Console.WriteLine("   Values:");
+            PrintValues(myBA4, 8);
+
+            Console.WriteLine("myBA5");
+            Console.WriteLine("   Count:    {0}", myBA5.Count);
+            Console.WriteLine("   Length:   {0}", myBA5.Length);
+            Console.WriteLine("   Values:");
+            PrintValues(myBA5, 8);
+        }
+
+        private void PrintValues(IEnumerable myList, int myWidth)
+        {
+            int i = myWidth;
+            foreach (Object obj in myList)
+            {
+                if (i <= 0)
+                {
+                    i = myWidth;
+                    Console.WriteLine();
+                }
+                i--;
+                Console.Write("{0,8}", obj);
+            }
+            Console.WriteLine();
+        }
+    }
     class Stacks
     {
         //                                                             Time Complexities                                        |   Space Complexities
@@ -65,7 +165,6 @@ namespace Collection
             Console.WriteLine($"\nnstack2.Count = {stack2.Count}");
         }
     }
-
     class Queues
     {
         //                                                             Time Complexities                                        |   Space Complexities
@@ -118,7 +217,6 @@ namespace Collection
             Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
         }
     }
-
     class LinearSearches
     {
         public int linearSearch(int[] arr, int key)
@@ -390,7 +488,7 @@ namespace Collection
     {
         static void Main(string[] args)
         {
-            new Hashtables().CreateHashtable();
+            new BitArrays().CreateBitArray();
         }
     }
 }
