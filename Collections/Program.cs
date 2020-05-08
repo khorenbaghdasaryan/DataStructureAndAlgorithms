@@ -111,6 +111,37 @@ namespace Collection
             Console.WriteLine();
         }
     }
+
+    class Dictionarys
+    {
+        public void Start()
+        {
+            // Create a new dictionary of strings, with string keys.
+            Dictionary<string, string> openWith = new Dictionary<string, string>();
+
+            // Add some elements to the dictionary. There are no
+            // duplicate keys, but some of the values are duplicates.
+            openWith.Add("txt", "notepad.exe");
+            openWith.Add("bmp", "paint.exe");
+            openWith.Add("dib", "paint.exe");
+            openWith.Add("rtf", "wordpad.exe");
+
+            // The Add method throws an exception if the new key is
+            // already in the dictionary.
+            try
+            {
+                openWith.Add("txt", "winword.exe");
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("An element with Key = \"txt\" already exists.");
+            }
+
+            // The Item property is another name for the indexer, so you
+            // can omit its name when accessing elements.
+            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}");
+        }
+    }
     class Stacks
     {
         //                                                             Time Complexities                                        |   Space Complexities
@@ -220,6 +251,32 @@ namespace Collection
             Console.WriteLine("\nqueueCopy.Clear()");
             queueCopy.Clear();
             Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
+        }
+    }
+    class SortedLists
+    {
+        public void Start()
+        {
+            // Creates and initializes a new SortedList.
+            SortedList mySL = new SortedList();
+            mySL.Add("Third", "!");
+            mySL.Add("Second", "World");
+            mySL.Add("First", "Hello");
+
+            // Displays the properties and values of the SortedList.
+            Console.WriteLine("mySL");
+            Console.WriteLine($"  Count:    {mySL.Count}");
+            Console.WriteLine($"  Capacity: {mySL.Capacity}");
+            Console.WriteLine("  Keys and Values:");
+            PrintKeysAndValues(mySL);
+        }
+
+        private void PrintKeysAndValues(SortedList mySL)
+        {
+            Console.WriteLine("\t-KEY-\t-VALUE-");
+            for (int i = 0; i < mySL.Count; i++)
+                Console.WriteLine($"\t{mySL.GetKey(i)}:\t{mySL.GetByIndex(i)}");
+            Console.WriteLine();
         }
     }
     class LinearSearches
@@ -483,7 +540,28 @@ namespace Collection
                 Console.WriteLine("   {0}", myEnumerator.Current);
             Console.WriteLine();
         }
-    }   
+    }
+    class Comparers
+    {
+        public void Start()
+        {
+            // Creates the strings to compare.
+            String str1 = "llegar";
+            String str2 = "lugar";
+
+            Console.WriteLine($"Comparing \"{str1}\" and \"{str2}\" ...");
+
+            // Uses the DefaultInvariant Comparer.
+            Console.WriteLine($"   Invariant Comparer: {Comparer.DefaultInvariant.Compare(str1, str2)}");
+
+            // Uses the Comparer based on the culture "es-ES" (Spanish - Spain, international sort).
+            Comparer myCompIntl = new Comparer(new CultureInfo("es-ES", false));
+            Console.WriteLine($"   International Sort: {myCompIntl.Compare( str1, str2)}");
+
+            // Uses the Comparer based on the culture identifier 0x040A (Spanish - Spain, traditional sort).
+            Comparer myCompTrad = new Comparer(new CultureInfo(0x040A, false));
+        }
+    }
     class LinkedLists
     {
         //                                                             Time Complexities                                        |   Space Complexities
@@ -655,7 +733,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new Int16Collection().Start();
+            new Dictionarys().Start();
         }
     }
 }
