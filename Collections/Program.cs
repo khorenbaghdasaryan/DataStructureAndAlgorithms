@@ -111,7 +111,6 @@ namespace Collection
             Console.WriteLine();
         }
     }
-
     class Dictionarys
     {
         public void Start()
@@ -356,6 +355,50 @@ namespace Collection
                 }
             }
             return -1;
+        }
+    }
+    class HashSets
+    {
+        public void Start()
+        {
+            KeyValuePair<int, string> keyValue = new KeyValuePair<int, string>(1, "a");
+            Console.WriteLine($"{keyValue.Key}  {keyValue.Value}");
+
+            HashSet<int> evenNumbers = new HashSet<int>();
+            HashSet<int> oddNumbers = new HashSet<int>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Populate numbers with just even numbers.
+                evenNumbers.Add(i * 2);
+
+                // Populate oddNumbers with just odd numbers.
+                oddNumbers.Add((i * 2) + 1);
+            }
+
+            Console.Write($"evenNumbers contains {evenNumbers.Count} elements: ");
+            DisplaySet(evenNumbers);
+
+
+            Console.Write("oddNumbers contains {0} elements: ", oddNumbers.Count);
+            DisplaySet(oddNumbers);
+
+            // Create a new HashSet populated with even numbers.
+            HashSet<int> numbers = new HashSet<int>(evenNumbers);
+            Console.WriteLine("numbers UnionWith oddNumbers...");
+            numbers.UnionWith(oddNumbers);
+
+            Console.Write("numbers contains {0} elements: ", numbers.Count);
+            DisplaySet(numbers);
+
+            Console.WriteLine();
+        }
+        private void DisplaySet(HashSet<int> collection)
+        {
+            Console.Write("{");
+            foreach (int i in collection)         
+                Console.Write(" {0}", i);         
+            Console.WriteLine(" }");
         }
     }
     class Hashtables
@@ -798,7 +841,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new Dictionarys().Start();
+            new HashSets().Start();
         }
     }
 }
