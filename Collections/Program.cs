@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
+using System.IO;
 
 namespace Collection
 {
@@ -317,6 +318,252 @@ namespace Collection
             Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
         }
     }
+    class SortedDictionarys
+    {
+        public void Start()
+        {
+            // Create a new sorted dictionary of strings, with string
+            SortedDictionary<string, string> openWith = new SortedDictionary<string, string>();
+
+            // Add some elements to the dictionary. There are no
+            // duplicate keys, but some of the values are duplicates.
+
+            openWith.Add("txt", "notepad.exe");
+            openWith.Add("bmp", "paint.exe");
+            openWith.Add("dib", "paint.exe");
+            openWith.Add("rtf", "wordpad.exe");
+
+            // already in the dictionary.
+            try
+            {
+                openWith.Add("txt", "winword.exe");
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("An element with Key = \"txt\" already exists.");
+            }
+
+            // The Item property is another name for the indexer, so you
+            // can omit its name when accessing elements.
+            Console.WriteLine("For key = \"rtf\", value = {0}.",
+                openWith["rtf"]);
+
+            // The indexer can be used to change the value associated
+            // with a key.
+            openWith["rtf"] = "winword.exe";
+            Console.WriteLine("For key = \"rtf\", value = {0}.",
+                openWith["rtf"]);
+
+            // If a key does not exist, setting the indexer for that key
+            // adds a new key/value pair.
+            openWith["doc"] = "winword.exe";
+
+            // The indexer throws an exception if the requested key is
+            // not in the dictionary.
+            try
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.",
+                    openWith["tif"]);
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // When a program often has to try keys that turn out not to
+            // be in the dictionary, TryGetValue can be a more efficient
+            // way to retrieve values.
+            string value = "";
+            if (openWith.TryGetValue("tif", out value))
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.", value);
+            }
+            else
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // ContainsKey can be used to test keys before inserting
+            // them.
+            if (!openWith.ContainsKey("ht"))
+            {
+                openWith.Add("ht", "hypertrm.exe");
+                Console.WriteLine("Value added for key = \"ht\": {0}",
+                    openWith["ht"]);
+            }
+
+            // When you use foreach to enumerate dictionary elements,
+            // the elements are retrieved as KeyValuePair objects.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> kvp in openWith)
+            {
+                Console.WriteLine("Key = {0}, Value = {1}",
+                    kvp.Key, kvp.Value);
+            }
+
+            // To get the values alone, use the Values property.
+            SortedDictionary<string, string>.ValueCollection valueColl =
+                openWith.Values;
+
+            // The elements of the ValueCollection are strongly typed
+            // with the type that was specified for dictionary values.
+            Console.WriteLine();
+            foreach (string s in valueColl)
+            {
+                Console.WriteLine("Value = {0}", s);
+            }
+
+            // To get the keys alone, use the Keys property.
+            SortedDictionary<string, string>.KeyCollection keyColl =
+                openWith.Keys;
+
+            // The elements of the KeyCollection are strongly typed
+            // with the type that was specified for dictionary keys.
+            Console.WriteLine();
+            foreach (string s in keyColl)
+            {
+                Console.WriteLine("Key = {0}", s);
+            }
+
+            // Use the Remove method to remove a key/value pair.
+            Console.WriteLine("\nRemove(\"doc\")");
+            openWith.Remove("doc");
+
+            if (!openWith.ContainsKey("doc"))
+            {
+                Console.WriteLine("Key \"doc\" is not found.");
+            }
+        }
+    }
+    class SortedSets
+    {
+        public void Start()
+        {
+            try
+            {
+                // Get a list of the files to use for the sorted set.
+                IEnumerable<string> files1 =
+                    Directory.EnumerateFiles(@"\\archives\2007\media",
+                    "*", SearchOption.AllDirectories);
+
+                // Create a sorted set using the ByFileExtension comparer.
+                var mediaFiles1 = new SortedSet<string>(new ByFileExtension());
+
+                // Note that there is a SortedSet constructor that takes an IEnumerable,
+                // but to remove the path information they must be added individually.
+                foreach (string f in files1)
+                {
+                    mediaFiles1.Add(f.Substring(f.LastIndexOf(@"\") + 1));
+                }
+
+                // Remove elements that have non-media extensions.
+                // See the 'IsDoc' method.
+                Console.WriteLine("Remove docs from the set...");
+                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
+                mediaFiles1.RemoveWhere(IsDoc);
+                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
+
+                Console.WriteLine();
+
+                // List all the avi files.
+                SortedSet<string> aviFiles = mediaFiles1.GetViewBetween("avi", "avj");
+
+                Console.WriteLine("AVI files:");
+                foreach (string avi in aviFiles)
+                {
+                    Console.WriteLine($"\t{avi}");
+                }
+
+                Console.WriteLine();
+
+                // Create another sorted set.
+                IEnumerable<string> files2 =
+                    Directory.EnumerateFiles(@"\\archives\2008\media",
+                        "*", SearchOption.AllDirectories);
+
+                var mediaFiles2 = new SortedSet<string>(new ByFileExtension());
+
+                foreach (string f in files2)
+                {
+                    mediaFiles2.Add(f.Substring(f.LastIndexOf(@"\") + 1));
+                }
+
+                // Remove elements in mediaFiles1 that are also in mediaFiles2.
+                Console.WriteLine("Remove duplicates (of mediaFiles2) from the set...");
+                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
+                mediaFiles1.ExceptWith(mediaFiles2);
+                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
+
+                Console.WriteLine();
+
+                Console.WriteLine("List of mediaFiles1:");
+                foreach (string f in mediaFiles1)
+                {
+                    Console.WriteLine($"\t{f}");
+                }
+
+                // Create a set of the sets.
+                IEqualityComparer<SortedSet<string>> comparer =
+                    SortedSet<string>.CreateSetComparer();
+
+                var allMedia = new HashSet<SortedSet<string>>(comparer);
+                allMedia.Add(mediaFiles1);
+                allMedia.Add(mediaFiles2);
+            }
+            catch (IOException ioEx)
+            {
+                Console.WriteLine(ioEx.Message);
+            }
+
+            catch (UnauthorizedAccessException AuthEx)
+            {
+                Console.WriteLine(AuthEx.Message);
+            }
+        }
+
+        // Defines a predicate delegate to use
+        // for the SortedSet.RemoveWhere method.
+        private static bool IsDoc(string s)
+        {
+            s = s.ToLower();
+            return (s.EndsWith(".txt") ||
+                s.EndsWith(".xls") ||
+                s.EndsWith(".xlsx") ||
+                s.EndsWith(".pdf") ||
+                s.EndsWith(".doc") ||
+                s.EndsWith(".docx"));
+        }
+    }
+
+    // Defines a comparer to create a sorted set
+    // that is sorted by the file extensions.
+    public class ByFileExtension : IComparer<string>
+    {
+        string xExt, yExt;
+
+        CaseInsensitiveComparer caseiComp = new CaseInsensitiveComparer();
+
+        public int Compare(string x, string y)
+        {
+            // Parse the extension from the file name.
+            xExt = x.Substring(x.LastIndexOf(".") + 1);
+            yExt = y.Substring(y.LastIndexOf(".") + 1);
+
+            // Compare the file extensions.
+            int vExt = caseiComp.Compare(xExt, yExt);
+            if (vExt != 0)
+            {
+                return vExt;
+            }
+            else
+            {
+                // The extension is the same,
+                // so compare the filenames.
+                return caseiComp.Compare(x, y);
+            }
+        }
+    }
+    
     class SortedLists
     {
         public void Start()
@@ -361,9 +608,6 @@ namespace Collection
     {
         public void Start()
         {
-            KeyValuePair<int, string> keyValue = new KeyValuePair<int, string>(1, "a");
-            Console.WriteLine($"{keyValue.Key}  {keyValue.Value}");
-
             HashSet<int> evenNumbers = new HashSet<int>();
             HashSet<int> oddNumbers = new HashSet<int>();
 
@@ -841,7 +1085,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new HashSets().Start();
+            new SortedSets().Start();
         }
     }
 }
