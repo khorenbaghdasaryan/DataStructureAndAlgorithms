@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Collection
 {
@@ -580,6 +581,9 @@ namespace Collection
     }
     class ConcurrentDictionarys
     {
+        //For very large ConcurrentDictionary<TKey, TValue> objects, you can increase 
+        //the maximum array size to 2 gigabytes (GB) on a 64-bit system by setting 
+        //the<gcAllowVeryLargeObjects> configuration element to true in the run-time environment.
         // Demonstrates:
         //      ConcurrentDictionary<TKey, TValue> ctor(concurrencyLevel, initialCapacity)
         //      ConcurrentDictionary<TKey, TValue>[TKey]
@@ -608,7 +612,46 @@ namespace Collection
             Console.WriteLine($"The square of 23 is {cd[23]} (should be {23 * 23})");
         }
     }
-    
+    class ConcurrentQueues
+    {
+        // Represents a thread-safe first in-first out (FIFO) collection.
+        // Demonstrates:
+        // ConcurrentQueue<T>.Enqueue()
+        // ConcurrentQueue<T>.TryPeek()
+        // ConcurrentQueue<T>.TryDequeue()
+        public void Start()
+        {
+            // Construct a ConcurrentQueue.
+            ConcurrentQueue<int> cq = new ConcurrentQueue<int>();
+
+
+            // Populate the queue.
+            for (int i = 0; i < 10000; i++)
+                cq.Enqueue(i);
+
+            // Peek at the first element.
+            int result;
+            if (!cq.TryPeek(out result))
+                Console.WriteLine($"CQ: TryPeek failed when it should have succeeded");
+            else if (result != 0)
+                Console.WriteLine($"CQ: Expected TryPeek result of 0, got {result}");
+
+            int outerSum = 0;
+            // An action to consume the ConcurrentQueue.
+            Action action = () =>
+            {
+                int localSum = 0;
+                int localValue;
+                while (cq.TryDequeue(out localValue)) localSum += localValue;
+                Interlocked.Add(ref outerSum, localSum);
+            };
+
+            // Start 4 concurrent consuming actions.
+            Parallel.Invoke(action, action, action, action);
+
+            Console.WriteLine($"outerSum = {outerSum}, should be 49995000");
+        }
+    }
     class ByFileExtension : IComparer<string>
     {
         // Defines a comparer to create a sorted set
@@ -1154,7 +1197,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new ConcurrentDictionarys().Start();
+            new ConcurrentQueues().Start();
         }
     }
 }
