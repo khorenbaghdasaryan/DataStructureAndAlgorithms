@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Collections.ObjectModel;
 
 namespace Collection
 {
@@ -1192,12 +1193,59 @@ namespace Collection
             Console.WriteLine();
         }
     }
+    class Collections
+    {
+        public void Start()
+        {
+            Collection<string> dinosaurs = new Collection<string>();
+            
+            dinosaurs.Add("Psitticosaurus");
+            dinosaurs.Add("Caudipteryx");
+            dinosaurs.Add("Compsognathus");
+            dinosaurs.Add("Muttaburrasaurus");
+
+            Console.WriteLine($"{dinosaurs.Count} dinosaurs:");
+            Display(dinosaurs);
+
+            Console.WriteLine($"\nIndexOf(\"Muttaburrasaurus\"): {dinosaurs.IndexOf("Muttaburrasaurus")} ");
+
+            Console.WriteLine($"\nContains(\"Caudipteryx\"): {dinosaurs.Contains("Caudipteryx")} ");
+
+            Console.WriteLine($"\nInsert(2, \"Nanotyrannus\")");
+            dinosaurs.Insert(2, "Nanotyrannus");
+            Display(dinosaurs);
+
+            Console.WriteLine($"\ndinosaurs[2]: {dinosaurs[2]}");
+            Console.WriteLine("\ndinosaurs[2] = \"Microraptor\"");
+            dinosaurs[2] = "Microraptor";
+            Display(dinosaurs);
+
+            Console.WriteLine("\nRemove(\"Microraptor\")");
+            dinosaurs.Remove("Microraptor");
+            Display(dinosaurs);
+
+            Console.WriteLine("\nRemoveAt(0)");
+            dinosaurs.RemoveAt(0);
+            Display(dinosaurs);
+
+            Console.WriteLine("\ndinosaurs.Clear()");
+            dinosaurs.Clear();
+            Console.WriteLine("Count: {0}", dinosaurs.Count);
+        }
+
+        private void Display(Collection<string> dinosaurs)
+        {
+            Console.WriteLine();
+            foreach (string item in dinosaurs)
+                Console.WriteLine(item);
+        }
+    }
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
-            new ConcurrentQueues().Start();
+            new Collections().Start();
         }
     }
 }
