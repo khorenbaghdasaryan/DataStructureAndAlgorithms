@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace Collection
 {
@@ -870,6 +871,39 @@ namespace Collection
             Console.WriteLine($"first is in myHT2: {myHT2.ContainsKey("first")} ");
             Console.WriteLine("first is in myHT3: {0}", myHT3.ContainsKey("first"));
         }
+
+        public void CollectionsUtils()
+        {
+            Hashtable population1 = CollectionsUtil.CreateCaseInsensitiveHashtable();
+
+            population1["Trapperville"] = 15;
+            population1["Doggerton"] = 230;
+            population1["New Hollow"] = 1234;
+            population1["McHenry"] = 185;
+
+            // Select cities from the table using mixed case.
+            Console.WriteLine("Case insensitive hashtable results:\n");
+            Console.WriteLine($"{"Trapperville"}'s population is: { population1["trapperville"]}");
+            Console.WriteLine($"{"Doggerton"}'s population is: {population1["DOGGERTON"]}");
+            Console.WriteLine($"{"New Hollow"}'s population is: {population1["New hoLLow"]}");
+            Console.WriteLine($"{"McHenry"}'s population is: {population1["MchenrY"]}");
+
+            SortedList population2 = CollectionsUtil.CreateCaseInsensitiveSortedList();
+
+            foreach (string city in population1.Keys)
+                population2.Add(city, population1[city]);
+
+            //Select cities from the sorted list using mixed case.
+            Console.WriteLine("\nCase insensitive sorted list results:\n");
+            Console.WriteLine($"{"Trapperville"}'s population is: {population2["trapPeRVille"]}");
+            Console.WriteLine($"{"Doggerton"}'s population is: {population2["dOGGeRtON"]}");
+            Console.WriteLine($"{"New Hollow"}'s population is: {population2["nEW hOLLOW"]}");
+            Console.WriteLine($"{"McHenry"}'s population is: {population2["nEW hOLLOW"]}");
+
+
+
+
+        }
     }
     class Int16Collection : CollectionBase
     {
@@ -1279,12 +1313,114 @@ namespace Collection
                 Console.WriteLine($"\"{dinosaur}\"");
         }
     }
+    class BitVector32s
+    {
+        public void Start()
+        {
+            // Creates and initializes a BitVector32 with all bit flags set to FALSE.
+            BitVector32 myBV1 = new BitVector32(0);
+
+            // Creates masks to isolate each of the first five bit flags.
+            int myBit1 = BitVector32.CreateMask();
+            int myBit2 = BitVector32.CreateMask(myBit1);
+            int myBit3 = BitVector32.CreateMask(myBit2);
+            int myBit4 = BitVector32.CreateMask(myBit3);
+            int myBit5 = BitVector32.CreateMask(myBit4);
+
+            // Sets the alternating bits to TRUE.
+            Console.WriteLine("Setting alternating bits to TRUE:");
+            Console.WriteLine($"   Initial:         {myBV1.ToString()}" );
+            myBV1[myBit1] = true;
+            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
+            myBV1[myBit3] = true;
+            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
+            myBV1[myBit5] = true;
+            Console.WriteLine($"   myBit5 = TRUE:   {myBV1.ToString()}");
+
+            BitVector32 myBV2 = new BitVector32(0);
+
+            // mySect3, which uses exactly one bit, can also be used as a bit flag.
+            BitVector32.Section mySect1 = BitVector32.CreateSection(6);
+            BitVector32.Section mySect2 = BitVector32.CreateSection(3, mySect1);
+            BitVector32.Section mySect3 = BitVector32.CreateSection(1, mySect2);
+            BitVector32.Section mySect4 = BitVector32.CreateSection(15, mySect3);
+
+            // Displays the values of the sections.
+            Console.WriteLine("Initial values:");
+            Console.WriteLine($"\tmySect1: { myBV2[mySect1]}");
+            Console.WriteLine($"\tmySect2: { myBV2[mySect2]}");
+            Console.WriteLine($"\tmySect3: { myBV2[mySect3]}");
+            Console.WriteLine($"\tmySect4: { myBV2[mySect4]}");
+
+            // Sets each section to a new value and displays the value of the BitVector32 at each step.
+            Console.WriteLine("Changing the values of each section:");
+            Console.WriteLine($"\tInitial:    \t{myBV2.ToString()}");
+            myBV2[mySect1] = 5;
+            Console.WriteLine($"\tmySect1 = 5:\t{myBV2.ToString()}");
+            myBV2[mySect2] = 3;
+            Console.WriteLine($"\tmySect2 = 3:\t{myBV2.ToString()}");
+            myBV2[mySect3] = 1;
+            Console.WriteLine($"\tmySect3 = 1:\t{myBV2.ToString()}");
+            myBV2[mySect4] = 9;
+            Console.WriteLine($"\tmySect4 = 9:\t{myBV2.ToString()}");
+
+            // Displays the values of the sections.
+            Console.WriteLine("New values:");
+            Console.WriteLine($"\tmySect1: {myBV2[mySect1]}");
+            Console.WriteLine($"\tmySect2: {myBV2[mySect2]}");
+            Console.WriteLine($"\tmySect3: {myBV2[mySect3]}");
+            Console.WriteLine($"\tmySect4: {myBV2[mySect4]}");
+
+        }
+    }
+    class HybridDictionarys
+    {
+        public void Start()
+        {
+            // Creates and initializes a new HybridDictionary.
+            HybridDictionary myCol = new HybridDictionary();
+
+            myCol.Add("Braeburn Apples", "1.49");
+            myCol.Add("Fuji Apples", "1.29");
+            myCol.Add("Gala Apples", "1.49");
+            myCol.Add("Golden Delicious Apples", "1.29");
+            myCol.Add("Granny Smith Apples", "0.89");
+            myCol.Add("Red Delicious Apples", "0.99");
+            myCol.Add("Plantain Bananas", "1.49");
+            myCol.Add("Yellow Bananas", "0.79");
+            myCol.Add("Strawberries", "3.33");
+            myCol.Add("Cranberries", "5.98");
+            myCol.Add("Navel Oranges", "1.29");
+            myCol.Add("Grapes", "1.99");
+            myCol.Add("Honeydew Melon", "0.59");
+            myCol.Add("Seedless Watermelon", "0.49");
+            myCol.Add("Pineapple", "1.49");
+            myCol.Add("Nectarine", "1.99");
+            myCol.Add("Plums", "1.69");
+            myCol.Add("Peaches", "1.99");
+
+            // Display the contents of the collection using foreach. This is the preferred method.
+            Console.WriteLine("Displays the elements using foreach:");
+            PrintKeysAndValues1(myCol);
+
+        }
+
+        private void PrintKeysAndValues1(IDictionary myCol)
+        {
+            Console.WriteLine("   KEY                       VALUE");
+            foreach (DictionaryEntry de in myCol)
+                Console.WriteLine($"  {de.Key,-25} {de.Value}");
+            Console.WriteLine();
+        }
+    }
+
+
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
-            new ReadOnlyCollection().Start();
+            new HybridDictionarys().Start();
         }
     }
 }
