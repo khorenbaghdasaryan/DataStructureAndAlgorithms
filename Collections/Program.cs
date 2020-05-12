@@ -1475,6 +1475,10 @@ namespace Collection
     }
     class ListDictionarys
     {
+        //This is a simple implementation of IDictionary using a singly linked list.
+        //It is smaller and faster than a Hashtable if the number of elements is 10 or less.
+        //This should not be used if performance is important for large numbers of elements.
+        //Members, such as Item[Object], Add, Remove, and Contains are O(n) operations, where n is Count.0
         public void Start()
         {
             // Creates and initializes a new ListDictionary.
@@ -1485,7 +1489,6 @@ namespace Collection
             myCol.Add("Golden Delicious Apples", "1.29");
             myCol.Add("Granny Smith Apples", "0.89");
             myCol.Add("Red Delicious Apples", "0.99");
-            myCol.Add("Plantain Bananas", "1.49");
 
             // Display the contents of the collection using foreach. This is the preferred method.
             Console.WriteLine("Displays the elements using foreach:");
@@ -1562,12 +1565,69 @@ namespace Collection
         }
     }
 
+    class NameValueCollections
+    {
+        // Represents a collection of associated String keys and String values that 
+        // can be accessed either with the key or with the index.
+        public void Start()
+        {
+            // Creates and initializes a new NameValueCollection.
+            NameValueCollection myCol = new NameValueCollection();
+            myCol.Add("red", "rojo");
+            myCol.Add("green", "verde");
+            myCol.Add("blue", "azul");
+            myCol.Add("red", "rouge");
+
+            // Displays the values in the NameValueCollection in two different ways.
+            Console.WriteLine("Displays the elements using the AllKeys property and the Item (indexer) property:");
+            PrintKeysAndValues(myCol);
+            Console.WriteLine("Displays the elements using GetKey and Get:");
+            PrintKeysAndValues2(myCol);
+
+            // Gets a value either by index or by key.
+            Console.WriteLine($"Index 1 contains the value {myCol[1]}." );
+            Console.WriteLine($"Key \"red\" has the value {myCol["red"]}." );
+            Console.WriteLine();
+
+            // Copies the values to a string array and displays the string array.
+            String[] myStrArr = new String[myCol.Count];
+            myCol.CopyTo(myStrArr, 0);
+            Console.WriteLine("The string array contains:");
+            foreach (String s in myStrArr)
+                Console.WriteLine($"   {s}");
+            Console.WriteLine();
+
+            // Searches for a key and deletes it.
+            myCol.Remove("green");
+            Console.WriteLine("The collection contains the following elements after removing \"green\":");
+            PrintKeysAndValues(myCol);
+
+            // Clears the entire collection.
+            myCol.Clear();
+            Console.WriteLine("The collection contains the following elements after it is cleared:");
+            PrintKeysAndValues(myCol);
+        }
+        public static void PrintKeysAndValues(NameValueCollection myCol)
+        {
+            Console.WriteLine("   KEY        VALUE");
+            foreach (String s in myCol.AllKeys)
+                Console.WriteLine($"   {s,-10} {myCol[s]}" );
+            Console.WriteLine();
+        }
+        public static void PrintKeysAndValues2(NameValueCollection myCol)
+        {
+            Console.WriteLine("   [INDEX] KEY        VALUE");
+            for (int i = 0; i < myCol.Count; i++)
+                Console.WriteLine($"   [{i}]     {myCol.GetKey(i),-10} { myCol.Get(i)}");
+            Console.WriteLine();
+        }
+    }
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
-            new ListDictionarys().Start();
+            new NameValueCollections().Start();
         }
     }
 }
