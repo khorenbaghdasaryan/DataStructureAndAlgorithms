@@ -1698,9 +1698,10 @@ namespace Collection
                 Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}" );
         }
     }
-
     class StringCollections
     {
+        // Elements in this collection can be accessed using an integer index.
+        // Indexes in this collection are zero-based.
         public void Start()
         {
             // Create and initializes a new StringCollection.
@@ -1794,12 +1795,64 @@ namespace Collection
             Console.WriteLine();
         }
     }
+    class StringDictionarys
+    {
+        public void Start()
+        {
+            // Creates and initializes a new StringDictionary.
+            StringDictionary myCol = new StringDictionary();
+            myCol.Add("red", "rojo");
+            myCol.Add("green", "verde");
+            myCol.Add("blue", "azul");
+
+            // Display the contents of the collection using foreach. This is the preferred method.
+            Console.WriteLine("Displays the elements using foreach:");
+            PrintKeysAndValues1(myCol);
+        }
+
+        // Uses the foreach statement which hides the complexity of the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public void PrintKeysAndValues1(StringDictionary myCol)
+        {
+            Console.WriteLine("   KEY                       VALUE");
+            foreach (DictionaryEntry de in myCol)
+                Console.WriteLine($"   {de.Key,-25} {de.Value}" );
+            Console.WriteLine();
+        }
+
+        // Uses the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public void PrintKeysAndValues2(StringDictionary myCol)
+        {
+            IEnumerator myEnumerator = myCol.GetEnumerator();
+            DictionaryEntry de;
+            Console.WriteLine("   KEY                       VALUE");
+            while (myEnumerator.MoveNext())
+            {
+                de = (DictionaryEntry)myEnumerator.Current;
+                Console.WriteLine($"   {de.Key,-25} {de.Value}" );
+            }
+            Console.WriteLine();
+        }
+
+        // Uses the Keys, Values, Count, and Item properties.
+        public void PrintKeysAndValues3(StringDictionary myCol)
+        {
+            String[] myKeys = new String[myCol.Count];
+            myCol.Keys.CopyTo(myKeys, 0);
+
+            Console.WriteLine("   INDEX KEY                       VALUE");
+            for (int i = 0; i < myCol.Count; i++)
+                Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}" );
+            Console.WriteLine();
+        }
+    }
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
-            new StringCollections().Start();
+            new StringDictionarys().Start();
         }
     }
 }
