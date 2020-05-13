@@ -539,6 +539,73 @@ namespace Collection
                 s.EndsWith(".docx"));
         }
     }
+    class SortedLists
+    {
+        public void Start()
+        {
+            // Creates and initializes a new SortedList.
+            SortedList mySL = new SortedList();
+            mySL.Add("Third", "!");
+            mySL.Add("Second", "World");
+            mySL.Add("First", "Hello");
+
+            // Displays the properties and values of the SortedList.
+            Console.WriteLine("mySL");
+            Console.WriteLine($"  Count:    {mySL.Count}");
+            Console.WriteLine($"  Capacity: {mySL.Capacity}");
+            Console.WriteLine("  Keys and Values:");
+            PrintKeysAndValues(mySL);
+        }
+
+        private void PrintKeysAndValues(SortedList mySL)
+        {
+            Console.WriteLine("\t-KEY-\t-VALUE-");
+            for (int i = 0; i < mySL.Count; i++)
+                Console.WriteLine($"\t{mySL.GetKey(i)}:\t{mySL.GetByIndex(i)}");
+            Console.WriteLine();
+        }
+    }
+    class HashSets
+    {
+        public void Start()
+        {
+            HashSet<int> evenNumbers = new HashSet<int>();
+            HashSet<int> oddNumbers = new HashSet<int>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                // Populate numbers with just even numbers.
+                evenNumbers.Add(i * 2);
+
+                // Populate oddNumbers with just odd numbers.
+                oddNumbers.Add((i * 2) + 1);
+            }
+
+            Console.Write($"evenNumbers contains {evenNumbers.Count} elements: ");
+            DisplaySet(evenNumbers);
+
+
+            Console.Write("oddNumbers contains {0} elements: ", oddNumbers.Count);
+            DisplaySet(oddNumbers);
+
+            // Create a new HashSet populated with even numbers.
+            HashSet<int> numbers = new HashSet<int>(evenNumbers);
+            Console.WriteLine("numbers UnionWith oddNumbers...");
+            numbers.UnionWith(oddNumbers);
+
+            Console.Write("numbers contains {0} elements: ", numbers.Count);
+            DisplaySet(numbers);
+
+            Console.WriteLine();
+        }
+        private void DisplaySet(HashSet<int> collection)
+        {
+            Console.Write("{");
+            foreach (int i in collection)
+                Console.Write(" {0}", i);
+            Console.WriteLine(" }");
+        }
+    }
     class ConcurrentBags
     {
         public void Start()
@@ -677,33 +744,7 @@ namespace Collection
                 // so compare the filenames.
                 return caseiComp.Compare(x, y);
         }
-    }
-    class SortedLists
-    {
-        public void Start()
-        {
-            // Creates and initializes a new SortedList.
-            SortedList mySL = new SortedList();
-            mySL.Add("Third", "!");
-            mySL.Add("Second", "World");
-            mySL.Add("First", "Hello");
-
-            // Displays the properties and values of the SortedList.
-            Console.WriteLine("mySL");
-            Console.WriteLine($"  Count:    {mySL.Count}");
-            Console.WriteLine($"  Capacity: {mySL.Capacity}");
-            Console.WriteLine("  Keys and Values:");
-            PrintKeysAndValues(mySL);
-        }
-
-        private void PrintKeysAndValues(SortedList mySL)
-        {
-            Console.WriteLine("\t-KEY-\t-VALUE-");
-            for (int i = 0; i < mySL.Count; i++)
-                Console.WriteLine($"\t{mySL.GetKey(i)}:\t{mySL.GetByIndex(i)}");
-            Console.WriteLine();
-        }
-    }
+    }  
     class LinearSearches
     {
         public int linearSearch(int[] arr, int key)
@@ -716,47 +757,6 @@ namespace Collection
                 }
             }
             return -1;
-        }
-    }
-    class HashSets
-    {
-        public void Start()
-        {
-            HashSet<int> evenNumbers = new HashSet<int>();
-            HashSet<int> oddNumbers = new HashSet<int>();
-
-            for (int i = 0; i < 5; i++)
-            {
-                // Populate numbers with just even numbers.
-                evenNumbers.Add(i * 2);
-
-                // Populate oddNumbers with just odd numbers.
-                oddNumbers.Add((i * 2) + 1);
-            }
-
-            Console.Write($"evenNumbers contains {evenNumbers.Count} elements: ");
-            DisplaySet(evenNumbers);
-
-
-            Console.Write("oddNumbers contains {0} elements: ", oddNumbers.Count);
-            DisplaySet(oddNumbers);
-
-            // Create a new HashSet populated with even numbers.
-            HashSet<int> numbers = new HashSet<int>(evenNumbers);
-            Console.WriteLine("numbers UnionWith oddNumbers...");
-            numbers.UnionWith(oddNumbers);
-
-            Console.Write("numbers contains {0} elements: ", numbers.Count);
-            DisplaySet(numbers);
-
-            Console.WriteLine();
-        }
-        private void DisplaySet(HashSet<int> collection)
-        {
-            Console.Write("{");
-            foreach (int i in collection)         
-                Console.Write(" {0}", i);         
-            Console.WriteLine(" }");
         }
     }
     class Hashtables
@@ -903,6 +903,110 @@ namespace Collection
 
 
 
+        }
+    }
+    class Dictionarys2
+    {
+        public void Start()
+        {
+            // Create a new dictionary of strings, with string keys.
+            //
+            Dictionary<string, string> openWith = new Dictionary<string, string>();
+
+            // Add some elements to the dictionary. There are no
+            // duplicate keys, but some of the values are duplicates.
+            openWith.Add("txt", "notepad.exe");
+            openWith.Add("bmp", "paint.exe");
+            openWith.Add("dib", "paint.exe");
+            openWith.Add("rtf", "wordpad.exe");
+
+            // The Add method throws an exception if the new key is
+            // already in the dictionary.
+            try
+            {
+                openWith.Add("txt", "winword.exe");
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("An element with Key = \"txt\" already exists.");
+            }
+
+            // The Item property is another name for the indexer, so you
+            // can omit its name when accessing elements.
+            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}." );
+
+            // The indexer can be used to change the value associated
+            // with a key.
+            openWith["rtf"] = "winword.exe";
+            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+
+            // If a key does not exist, setting the indexer for that key
+            // adds a new key/value pair.
+            openWith["doc"] = "winword.exe";
+
+            // The indexer throws an exception if the requested key is
+            // not in the dictionary.
+            try
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.",
+                    openWith["tif"]);
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // When a program often has to try keys that turn out not to
+            // be in the dictionary, TryGetValue can be a more efficient
+            // way to retrieve values.
+            string value = "";
+            if (openWith.TryGetValue("tif", out value))
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.", value);
+            }
+            else
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // ContainsKey can be used to test keys before inserting
+            // them.
+            if (!openWith.ContainsKey("ht"))
+            {
+                openWith.Add("ht", "hypertrm.exe");
+                Console.WriteLine($"Value added for key = \"ht\": {openWith["ht"]}");
+            }
+
+            // When you use foreach to enumerate dictionary elements,
+            // the elements are retrieved as KeyValuePair objects.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> kvp in openWith)
+                Console.WriteLine($"Key = {kvp.Key}, Value = {kvp.Value}" );
+
+            // To get the values alone, use the Values property.
+            Dictionary<string, string>.ValueCollection valueColl = openWith.Values;
+
+            // The elements of the ValueCollection are strongly typed
+            // with the type that was specified for dictionary values.
+            Console.WriteLine();
+            foreach (string s in valueColl)
+                Console.WriteLine($"Value = {s}" );
+
+            // To get the keys alone, use the Keys property.
+            Dictionary<string, string>.KeyCollection keyColl = openWith.Keys;
+
+            // The elements of the KeyCollection are strongly typed
+            // with the type that was specified for dictionary keys.
+            Console.WriteLine();
+            foreach (string s in keyColl)
+                Console.WriteLine($"Key = {s}" );
+
+            // Use the Remove method to remove a key/value pair.
+            Console.WriteLine("\nRemove(\"doc\")");
+            openWith.Remove("doc");
+
+            if (!openWith.ContainsKey("doc"))
+                Console.WriteLine("Key \"doc\" is not found.");
         }
     }
     class Int16Collection : CollectionBase
@@ -1797,6 +1901,7 @@ namespace Collection
     }
     class StringDictionarys
     {
+        //A key cannot be null, but a value can.
         public void Start()
         {
             // Creates and initializes a new StringDictionary.
@@ -1807,6 +1912,36 @@ namespace Collection
 
             // Display the contents of the collection using foreach. This is the preferred method.
             Console.WriteLine("Displays the elements using foreach:");
+            PrintKeysAndValues1(myCol);
+
+            // Display the contents of the collection using the enumerator.
+            Console.WriteLine("Displays the elements using the IEnumerator:");
+            PrintKeysAndValues2(myCol);
+
+            // Display the contents of the collection using the Keys, Values, Count, and Item properties.
+            Console.WriteLine("Displays the elements using the Keys, Values, Count, and Item properties:");
+            PrintKeysAndValues3(myCol);
+
+            // Copies the StringDictionary to an array with DictionaryEntry elements.
+            DictionaryEntry[] myArr = new DictionaryEntry[myCol.Count];
+            myCol.CopyTo(myArr, 0);
+
+            // Displays the values in the array.
+            Console.WriteLine("Displays the elements in the array:");
+            Console.WriteLine("   KEY        VALUE");
+            for (int i = 0; i < myArr.Length; i++)
+                Console.WriteLine($"   {myArr[i].Key,-10} {myArr[i].Value}" );
+            Console.WriteLine();
+
+            // Searches for a key and deletes it.
+            if (myCol.ContainsKey("green"))
+                myCol.Remove("green");
+            Console.WriteLine("The collection contains the following elements after removing \"green\":");
+            PrintKeysAndValues1(myCol);
+
+            // Clears the entire collection.
+            myCol.Clear();
+            Console.WriteLine("The collection contains the following elements after it is cleared:");
             PrintKeysAndValues1(myCol);
         }
 
@@ -1847,12 +1982,22 @@ namespace Collection
             Console.WriteLine();
         }
     }
+
+    class ParallelCollection
+    {
+        public void Start()
+        {
+            Parallel.Invoke(new ArrayLists().CreateArrayList, new Comparers().Start);
+            new ArrayLists().CreateArrayList();
+            new Comparers().Start();
+        }
+    }
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
-            new StringDictionarys().Start();
+            new ParallelCollection().Start();
         }
     }
 }
