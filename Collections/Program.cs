@@ -47,7 +47,7 @@ namespace Collection
         //                                                      Time Complexities                                         |   Space Complexities
         //Collection                      AVERAGE                        |                Worst                           |
         //                   Access     Search     Insert     Deletion   |  Access     Search     Insert     Deletion     |
-        //Stacks<T>                                                      |                                                |          
+        //BitArray                                                      |                                                |          
         //   
         //The BitArray class is a collection class in which the capacity is always the same as the count.Elements are added to a BitArray by increasing
         //the Length property; elements are deleted by decreasing the Length property.The size of a BitArray is controlled by the client; indexing past
@@ -117,8 +117,280 @@ namespace Collection
             Console.WriteLine();
         }
     }
+    class ByFileExtension : IComparer<string>
+    {
+        // Defines a comparer to create a sorted set
+        // that is sorted by the file extensions.
+        string xExt, yExt;
+
+        CaseInsensitiveComparer caseiComp = new CaseInsensitiveComparer();
+
+        public int Compare(string x, string y)
+        {
+            // Parse the extension from the file name.
+            xExt = x.Substring(x.LastIndexOf(".") + 1);
+            yExt = y.Substring(y.LastIndexOf(".") + 1);
+
+            // Compare the file extensions.
+            int vExt = caseiComp.Compare(xExt, yExt);
+            if (vExt != 0)
+                return vExt;
+            else
+                // The extension is the same,
+                // so compare the filenames.
+                return caseiComp.Compare(x, y);
+        }
+    }
+    class BitVector32s
+    {
+        public void Start()
+        {
+            // Creates and initializes a BitVector32 with all bit flags set to FALSE.
+            BitVector32 myBV1 = new BitVector32(0);
+
+            // Creates masks to isolate each of the first five bit flags.
+            int myBit1 = BitVector32.CreateMask();
+            int myBit2 = BitVector32.CreateMask(myBit1);
+            int myBit3 = BitVector32.CreateMask(myBit2);
+            int myBit4 = BitVector32.CreateMask(myBit3);
+            int myBit5 = BitVector32.CreateMask(myBit4);
+
+            // Sets the alternating bits to TRUE.
+            Console.WriteLine("Setting alternating bits to TRUE:");
+            Console.WriteLine($"   Initial:         {myBV1.ToString()}");
+            myBV1[myBit1] = true;
+            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
+            myBV1[myBit3] = true;
+            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
+            myBV1[myBit5] = true;
+            Console.WriteLine($"   myBit5 = TRUE:   {myBV1.ToString()}");
+
+            BitVector32 myBV2 = new BitVector32(0);
+
+            // mySect3, which uses exactly one bit, can also be used as a bit flag.
+            BitVector32.Section mySect1 = BitVector32.CreateSection(6);
+            BitVector32.Section mySect2 = BitVector32.CreateSection(3, mySect1);
+            BitVector32.Section mySect3 = BitVector32.CreateSection(1, mySect2);
+            BitVector32.Section mySect4 = BitVector32.CreateSection(15, mySect3);
+
+            // Displays the values of the sections.
+            Console.WriteLine("Initial values:");
+            Console.WriteLine($"\tmySect1: { myBV2[mySect1]}");
+            Console.WriteLine($"\tmySect2: { myBV2[mySect2]}");
+            Console.WriteLine($"\tmySect3: { myBV2[mySect3]}");
+            Console.WriteLine($"\tmySect4: { myBV2[mySect4]}");
+
+            // Sets each section to a new value and displays the value of the BitVector32 at each step.
+            Console.WriteLine("Changing the values of each section:");
+            Console.WriteLine($"\tInitial:    \t{myBV2.ToString()}");
+            myBV2[mySect1] = 5;
+            Console.WriteLine($"\tmySect1 = 5:\t{myBV2.ToString()}");
+            myBV2[mySect2] = 3;
+            Console.WriteLine($"\tmySect2 = 3:\t{myBV2.ToString()}");
+            myBV2[mySect3] = 1;
+            Console.WriteLine($"\tmySect3 = 1:\t{myBV2.ToString()}");
+            myBV2[mySect4] = 9;
+            Console.WriteLine($"\tmySect4 = 9:\t{myBV2.ToString()}");
+
+            // Displays the values of the sections.
+            Console.WriteLine("New values:");
+            Console.WriteLine($"\tmySect1: {myBV2[mySect1]}");
+            Console.WriteLine($"\tmySect2: {myBV2[mySect2]}");
+            Console.WriteLine($"\tmySect3: {myBV2[mySect3]}");
+            Console.WriteLine($"\tmySect4: {myBV2[mySect4]}");
+
+        }
+    }
+    class ConcurrentBags
+    {
+        public void Start()
+        {
+            ConcurrentBag<int> cd = new ConcurrentBag<int>();
+            List<Task> bagAddTasks = new List<Task>();
+
+            for (int i = 0; i < 500; i++)
+            {
+                var numberToAdd = i;
+                bagAddTasks.Add(Task.Run(() => cd.Add(numberToAdd)));
+            }
+
+            // Wait for all tasks to complete
+            Task.WaitAll(bagAddTasks.ToArray());
+
+            // Consume the items in the bag
+            List<Task> bagConsumeTasks = new List<Task>();
+            int itemsInBag = 0;
+            while (!cd.IsEmpty)
+            {
+                bagConsumeTasks.Add(Task.Run(() =>
+                {
+                    int item;
+                    if (cd.TryTake(out item))
+                    {
+                        Console.WriteLine(item);
+                        itemsInBag++;
+                    }
+                }));
+            }
+            Task.WaitAll(bagConsumeTasks.ToArray());
+
+            Console.WriteLine($"There were {itemsInBag} items in the bag");
+
+            // Checks the bag for an item
+            // The bag should be empty and this should not print anything
+            int unexpectedItem;
+            if (cd.TryPeek(out unexpectedItem))
+                Console.WriteLine("Found an item in the bag when it should be empty");
+        }
+    }
+    class ConcurrentDictionarys
+    {
+        //For very large ConcurrentDictionary<TKey, TValue> objects, you can increase 
+        //the maximum array size to 2 gigabytes (GB) on a 64-bit system by setting 
+        //the<gcAllowVeryLargeObjects> configuration element to true in the run-time environment.
+        // Demonstrates:
+        //      ConcurrentDictionary<TKey, TValue> ctor(concurrencyLevel, initialCapacity)
+        //      ConcurrentDictionary<TKey, TValue>[TKey]
+        public void Start()
+        {
+            // We know how many items we want to insert into the ConcurrentDictionary.
+            // So set the initial capacity to some prime number above that, to ensure that
+            // the ConcurrentDictionary does not need to be resized while initializing it.
+            int NUMITEMS = 64;
+            int initialCapacity = 101;
+
+            // The higher the concurrencyLevel, the higher the theoretical number of operations
+            // that could be performed concurrently on the ConcurrentDictionary.  However, global
+            // operations like resizing the dictionary take longer as the concurrencyLevel rises.
+            // For the purposes of this example, we'll compromise at numCores * 2.
+            int numProcs = Environment.ProcessorCount;
+            int concurrencyLevel = numProcs * 2;
+
+            // Construct the dictionary with the desired concurrencyLevel and initialCapacity
+            ConcurrentDictionary<int, int> cd = new ConcurrentDictionary<int, int>(concurrencyLevel, initialCapacity);
+
+            // Initialize the dictionary
+            for (int i = 0; i < NUMITEMS; i++)
+                cd[i] = i * i;
+
+            Console.WriteLine($"The square of 23 is {cd[23]} (should be {23 * 23})");
+        }
+    }
+    class ConcurrentQueues
+    {
+        // Represents a thread-safe first in-first out (FIFO) collection.
+        // Demonstrates:
+        // ConcurrentQueue<T>.Enqueue()
+        // ConcurrentQueue<T>.TryPeek()
+        // ConcurrentQueue<T>.TryDequeue()
+        public void Start()
+        {
+            // Construct a ConcurrentQueue.
+            ConcurrentQueue<int> cq = new ConcurrentQueue<int>();
+
+
+            // Populate the queue.
+            for (int i = 0; i < 10000; i++)
+                cq.Enqueue(i);
+
+            // Peek at the first element.
+            int result;
+            if (!cq.TryPeek(out result))
+                Console.WriteLine($"CQ: TryPeek failed when it should have succeeded");
+            else if (result != 0)
+                Console.WriteLine($"CQ: Expected TryPeek result of 0, got {result}");
+
+            int outerSum = 0;
+            // An action to consume the ConcurrentQueue.
+            Action action = () =>
+            {
+                int localSum = 0;
+                int localValue;
+                while (cq.TryDequeue(out localValue)) localSum += localValue;
+                Interlocked.Add(ref outerSum, localSum);
+            };
+
+            // Start 4 concurrent consuming actions.
+            Parallel.Invoke(action, action, action, action);
+
+            Console.WriteLine($"outerSum = {outerSum}, should be 49995000");
+        }
+    }
+    class Collections
+    {
+        public void Start()
+        {
+            Collection<string> dinosaurs = new Collection<string>();
+
+            dinosaurs.Add("Psitticosaurus");
+            dinosaurs.Add("Caudipteryx");
+            dinosaurs.Add("Compsognathus");
+            dinosaurs.Add("Muttaburrasaurus");
+
+            Console.WriteLine($"{dinosaurs.Count} dinosaurs:");
+            Display(dinosaurs);
+
+            Console.WriteLine($"\nIndexOf(\"Muttaburrasaurus\"): {dinosaurs.IndexOf("Muttaburrasaurus")} ");
+
+            Console.WriteLine($"\nContains(\"Caudipteryx\"): {dinosaurs.Contains("Caudipteryx")} ");
+
+            Console.WriteLine($"\nInsert(2, \"Nanotyrannus\")");
+            dinosaurs.Insert(2, "Nanotyrannus");
+            Display(dinosaurs);
+
+            Console.WriteLine($"\ndinosaurs[2]: {dinosaurs[2]}");
+            Console.WriteLine("\ndinosaurs[2] = \"Microraptor\"");
+            dinosaurs[2] = "Microraptor";
+            Display(dinosaurs);
+
+            Console.WriteLine("\nRemove(\"Microraptor\")");
+            dinosaurs.Remove("Microraptor");
+            Display(dinosaurs);
+
+            Console.WriteLine("\nRemoveAt(0)");
+            dinosaurs.RemoveAt(0);
+            Display(dinosaurs);
+
+            Console.WriteLine("\ndinosaurs.Clear()");
+            dinosaurs.Clear();
+            Console.WriteLine("Count: {0}", dinosaurs.Count);
+        }
+
+        private void Display(Collection<string> dinosaurs)
+        {
+            Console.WriteLine();
+            foreach (string item in dinosaurs)
+                Console.WriteLine(item);
+        }
+    }
+    class Comparers
+    {
+        public void Start()
+        {
+            // Creates the strings to compare.
+            String str1 = "llegar";
+            String str2 = "lugar";
+
+            Console.WriteLine($"Comparing \"{str1}\" and \"{str2}\" ...");
+
+            // Uses the DefaultInvariant Comparer.
+            Console.WriteLine($"   Invariant Comparer: {Comparer.DefaultInvariant.Compare(str1, str2)}");
+
+            // Uses the Comparer based on the culture "es-ES" (Spanish - Spain, international sort).
+            Comparer myCompIntl = new Comparer(new CultureInfo("es-ES", false));
+            Console.WriteLine($"   International Sort: {myCompIntl.Compare(str1, str2)}");
+
+            // Uses the Comparer based on the culture identifier 0x040A (Spanish - Spain, traditional sort).
+            Comparer myCompTrad = new Comparer(new CultureInfo(0x040A, false));
+        }
+    }
     class Dictionarys
     {
+        //                                                                           Time Complexities                                                 |   Space Complexities
+        //Collection                                 AVERAGE                                  |                Worst                                   |
+        //                              Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add     |
+        //Dictionary<TKey, TValue>      N/A        N/A         N/A       O(1)         O(1)    |  N/A        N/A        N/A       O(1)         O(n)    |          
+        //   
         public void Start()
         {
             // Create a new dictionary of strings, with string keys.
@@ -212,361 +484,12 @@ namespace Collection
                 Console.WriteLine("Key \"doc\" is not found.");
         }
     }
-    class Stacks
-    {
-        //                                                             Time Complexities                                        |   Space Complexities
-        //Collection                      AVERAGE                              |                Worst                           |
-        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
-        //Stacks<T>          O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
-        //   
-
-        //This feature makes it LIFO data structure.LIFO stands
-        //for Last-in-first-out. Here, the element which is placed
-        //(inserted or added) last, is accessed first.In stack terminology,
-        //insertion operation is called PUSH operation and removal operation
-        //is called POP operation.
-        public void CreateSteack()
-        {
-            Stack<string> numbers = new Stack<string>();
-            numbers.Push("One");
-            numbers.Push("Two");
-            numbers.Push("Three");
-            numbers.Push("Four");
-            numbers.Push("Five");
-
-            // A stack can be enumerated without disturbing its contents.
-            foreach (string number in numbers)         
-                Console.WriteLine(number);
-
-            Console.WriteLine($"\nPopping '{numbers.Pop()}'");
-            Console.WriteLine($"Peek at next item to destack: {numbers.Peek()}");
-            Console.WriteLine($"Popping '{numbers.Pop()}'");
-
-            // Create a copy of the stack, using the ToArray method and the
-            // constructor that accepts an IEnumerable<T>.
-            Stack<string> stack2 = new Stack<string>(numbers.ToArray());
-
-            Console.WriteLine("\n Contents of the first copy:");
-            foreach (string number in stack2)
-                Console.WriteLine(number);
-
-            // Create an array twice the size of the stack and copy the
-            // elements of the stack, starting at the middle of the
-            // array.
-            string[] array2 = new string[numbers.Count * 2];
-            numbers.CopyTo(array2, numbers.Count);
-
-            // Create a second stack, using the constructor that accepts an
-            // IEnumerable(Of T).
-            Stack<string> stack3 = new Stack<string>(array2);
-
-            Console.WriteLine("\nContents of the second copy, with duplicates and nulls:");
-            foreach (string number in stack3)
-                Console.WriteLine(number);
-
-            Console.WriteLine($"\nstack2.Contains(\"four\") = {stack2.Contains("four")}");
-
-            Console.WriteLine("\nstack2.Clear()");
-            stack2.Clear();
-            Console.WriteLine($"\nnstack2.Count = {stack2.Count}");
-        }
-    }
-    class Queues
-    {
-        //                                                             Time Complexities                                        |   Space Complexities
-        //Collection                      AVERAGE                              |                Worst                           |
-        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
-        //Queue<T>           O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
-        public void CreateQueue()
-        {
-            Queue<string> numbers = new Queue<string>();
-            numbers.Enqueue("one");
-            numbers.Enqueue("two");
-            numbers.Enqueue("three");
-            numbers.Enqueue("four");
-            numbers.Enqueue("five");
-
-            // A queue can be enumerated without disturbing its contents.
-            foreach (string number in numbers)
-                Console.WriteLine(number);
-
-            Console.WriteLine($"\nDequeuing '{numbers.Dequeue()}'");
-            Console.WriteLine($"Peek at next item to dequeue: {numbers.Dequeue()}");
-            Console.WriteLine($"Dequeuing '{numbers.Dequeue()}'");
-
-            // Create a copy of the queue, using the ToArray method and the
-            // constructor that accepts an IEnumerable<T>.
-            Queue<string> queueCopy = new Queue<string>(numbers.ToArray());
-
-            Console.WriteLine("\nContents of the first copy:");
-            foreach (string number in numbers)
-                Console.WriteLine(number);
-
-            // Create an array twice the size of the queue and copy the
-            // elements of the queue, starting at the middle of the
-            // array.
-            string[] array2 = new string[numbers.Count * 2];
-            numbers.CopyTo(array2, numbers.Count);
-
-            foreach (string number in array2)
-                Console.WriteLine(number);
-
-            // Create a second queue, using the constructor that accepts an
-            // IEnumerable(Of T).
-            Queue<string> queueCopy2 = new Queue<string>(array2);
-            foreach (string number in numbers)
-                Console.WriteLine(number);
-
-            Console.WriteLine($"\nqueueCopy.Contains(\"four\") = {queueCopy.Contains("four")}");
-            Console.WriteLine("\nqueueCopy.Clear()");
-            queueCopy.Clear();
-            Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
-        }
-    }
-    class SortedDictionarys
-    {
-        public void Start()
-        {
-            // Create a new sorted dictionary of strings, with string
-            SortedDictionary<string, string> openWith = new SortedDictionary<string, string>();
-
-            // Add some elements to the dictionary. There are no
-            // duplicate keys, but some of the values are duplicates.
-
-            openWith.Add("txt", "notepad.exe");
-            openWith.Add("bmp", "paint.exe");
-            openWith.Add("dib", "paint.exe");
-            openWith.Add("rtf", "wordpad.exe");
-
-            // already in the dictionary.
-            try
-            {
-                openWith.Add("txt", "winword.exe");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine("An element with Key = \"txt\" already exists.");
-            }
-
-            // The Item property is another name for the indexer, so you
-            // can omit its name when accessing elements.
-            Console.WriteLine("For key = \"rtf\", value = {0}.",
-                openWith["rtf"]);
-
-            // The indexer can be used to change the value associated
-            // with a key.
-            openWith["rtf"] = "winword.exe";
-            Console.WriteLine("For key = \"rtf\", value = {0}.",
-                openWith["rtf"]);
-
-            // If a key does not exist, setting the indexer for that key
-            // adds a new key/value pair.
-            openWith["doc"] = "winword.exe";
-
-            // The indexer throws an exception if the requested key is
-            // not in the dictionary.
-            try
-            {
-                Console.WriteLine("For key = \"tif\", value = {0}.",
-                    openWith["tif"]);
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.WriteLine("Key = \"tif\" is not found.");
-            }
-
-            // When a program often has to try keys that turn out not to
-            // be in the dictionary, TryGetValue can be a more efficient
-            // way to retrieve values.
-            string value = "";
-            if (openWith.TryGetValue("tif", out value))
-            {
-                Console.WriteLine("For key = \"tif\", value = {0}.", value);
-            }
-            else
-            {
-                Console.WriteLine("Key = \"tif\" is not found.");
-            }
-
-            // ContainsKey can be used to test keys before inserting
-            // them.
-            if (!openWith.ContainsKey("ht"))
-            {
-                openWith.Add("ht", "hypertrm.exe");
-                Console.WriteLine("Value added for key = \"ht\": {0}",
-                    openWith["ht"]);
-            }
-
-            // When you use foreach to enumerate dictionary elements,
-            // the elements are retrieved as KeyValuePair objects.
-            Console.WriteLine();
-            foreach (KeyValuePair<string, string> kvp in openWith)
-            {
-                Console.WriteLine("Key = {0}, Value = {1}",
-                    kvp.Key, kvp.Value);
-            }
-
-            // To get the values alone, use the Values property.
-            SortedDictionary<string, string>.ValueCollection valueColl =
-                openWith.Values;
-
-            // The elements of the ValueCollection are strongly typed
-            // with the type that was specified for dictionary values.
-            Console.WriteLine();
-            foreach (string s in valueColl)
-            {
-                Console.WriteLine("Value = {0}", s);
-            }
-
-            // To get the keys alone, use the Keys property.
-            SortedDictionary<string, string>.KeyCollection keyColl =
-                openWith.Keys;
-
-            // The elements of the KeyCollection are strongly typed
-            // with the type that was specified for dictionary keys.
-            Console.WriteLine();
-            foreach (string s in keyColl)
-            {
-                Console.WriteLine("Key = {0}", s);
-            }
-
-            // Use the Remove method to remove a key/value pair.
-            Console.WriteLine("\nRemove(\"doc\")");
-            openWith.Remove("doc");
-
-            if (!openWith.ContainsKey("doc"))
-            {
-                Console.WriteLine("Key \"doc\" is not found.");
-            }
-        }
-    }
-    class SortedSets
-    {
-        public void Start()
-        {
-            try
-            {
-                // Get a list of the files to use for the sorted set.
-                IEnumerable<string> files1 =
-                    Directory.EnumerateFiles(@"\\archives\2007\media",
-                    "*", SearchOption.AllDirectories);
-
-                // Create a sorted set using the ByFileExtension comparer.
-                var mediaFiles1 = new SortedSet<string>(new ByFileExtension());
-
-                // Note that there is a SortedSet constructor that takes an IEnumerable,
-                // but to remove the path information they must be added individually.
-                foreach (string f in files1)
-                {
-                    mediaFiles1.Add(f.Substring(f.LastIndexOf(@"\") + 1));
-                }
-
-                // Remove elements that have non-media extensions.
-                // See the 'IsDoc' method.
-                Console.WriteLine("Remove docs from the set...");
-                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
-                mediaFiles1.RemoveWhere(IsDoc);
-                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
-
-                Console.WriteLine();
-
-                // List all the avi files.
-                SortedSet<string> aviFiles = mediaFiles1.GetViewBetween("avi", "avj");
-
-                Console.WriteLine("AVI files:");
-                foreach (string avi in aviFiles)
-                {
-                    Console.WriteLine($"\t{avi}");
-                }
-
-                Console.WriteLine();
-
-                // Create another sorted set.
-                IEnumerable<string> files2 =
-                    Directory.EnumerateFiles(@"\\archives\2008\media",
-                        "*", SearchOption.AllDirectories);
-
-                var mediaFiles2 = new SortedSet<string>(new ByFileExtension());
-
-                foreach (string f in files2)
-                {
-                    mediaFiles2.Add(f.Substring(f.LastIndexOf(@"\") + 1));
-                }
-
-                // Remove elements in mediaFiles1 that are also in mediaFiles2.
-                Console.WriteLine("Remove duplicates (of mediaFiles2) from the set...");
-                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
-                mediaFiles1.ExceptWith(mediaFiles2);
-                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
-
-                Console.WriteLine();
-
-                Console.WriteLine("List of mediaFiles1:");
-                foreach (string f in mediaFiles1)
-                {
-                    Console.WriteLine($"\t{f}");
-                }
-
-                // Create a set of the sets.
-                IEqualityComparer<SortedSet<string>> comparer =
-                    SortedSet<string>.CreateSetComparer();
-
-                var allMedia = new HashSet<SortedSet<string>>(comparer);
-                allMedia.Add(mediaFiles1);
-                allMedia.Add(mediaFiles2);
-            }
-            catch (IOException ioEx)
-            {
-                Console.WriteLine(ioEx.Message);
-            }
-
-            catch (UnauthorizedAccessException AuthEx)
-            {
-                Console.WriteLine(AuthEx.Message);
-            }
-        }
-
-        // Defines a predicate delegate to use
-        // for the SortedSet.RemoveWhere method.
-        private static bool IsDoc(string s)
-        {
-            s = s.ToLower();
-            return (s.EndsWith(".txt") ||
-                s.EndsWith(".xls") ||
-                s.EndsWith(".xlsx") ||
-                s.EndsWith(".pdf") ||
-                s.EndsWith(".doc") ||
-                s.EndsWith(".docx"));
-        }
-    }
-    class SortedLists
-    {
-        public void Start()
-        {
-            // Creates and initializes a new SortedList.
-            SortedList mySL = new SortedList();
-            mySL.Add("Third", "!");
-            mySL.Add("Second", "World");
-            mySL.Add("First", "Hello");
-
-            // Displays the properties and values of the SortedList.
-            Console.WriteLine("mySL");
-            Console.WriteLine($"  Count:    {mySL.Count}");
-            Console.WriteLine($"  Capacity: {mySL.Capacity}");
-            Console.WriteLine("  Keys and Values:");
-            PrintKeysAndValues(mySL);
-        }
-
-        private void PrintKeysAndValues(SortedList mySL)
-        {
-            Console.WriteLine("\t-KEY-\t-VALUE-");
-            for (int i = 0; i < mySL.Count; i++)
-                Console.WriteLine($"\t{mySL.GetKey(i)}:\t{mySL.GetByIndex(i)}");
-            Console.WriteLine();
-        }
-    }
     class HashSets
     {
+        //                                                                  Time Complexities                                                    |   Space Complexities
+        //Collection                      AVERAGE                                  |                Worst                                        |
+        //                   Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add          |
+        //HashSet<T>         O(n)       O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(1)       O(1)         O(n)         |        O(n)
         public void Start()
         {
             HashSet<int> evenNumbers = new HashSet<int>();
@@ -604,159 +527,6 @@ namespace Collection
             foreach (int i in collection)
                 Console.Write(" {0}", i);
             Console.WriteLine(" }");
-        }
-    }
-    class ConcurrentBags
-    {
-        public void Start()
-        {
-            ConcurrentBag<int> cd = new ConcurrentBag<int>();
-            List<Task> bagAddTasks = new List<Task>();
-
-            for (int i = 0; i < 500; i++)
-            {
-                var numberToAdd = i;
-                bagAddTasks.Add(Task.Run(() => cd.Add(numberToAdd)));
-            }
-
-            // Wait for all tasks to complete
-            Task.WaitAll(bagAddTasks.ToArray());
-
-            // Consume the items in the bag
-            List<Task> bagConsumeTasks = new List<Task>();
-            int itemsInBag = 0;
-            while (!cd.IsEmpty)
-            {
-                bagConsumeTasks.Add(Task.Run(() =>
-                {
-                    int item;
-                    if (cd.TryTake(out item))
-                    {
-                        Console.WriteLine(item);
-                        itemsInBag++;
-                    }
-                }));
-            }
-            Task.WaitAll(bagConsumeTasks.ToArray());
-
-            Console.WriteLine($"There were {itemsInBag} items in the bag");
-
-            // Checks the bag for an item
-            // The bag should be empty and this should not print anything
-            int unexpectedItem;
-            if (cd.TryPeek(out unexpectedItem))
-                Console.WriteLine("Found an item in the bag when it should be empty");
-        }
-    }
-    class ConcurrentDictionarys
-    {
-        //For very large ConcurrentDictionary<TKey, TValue> objects, you can increase 
-        //the maximum array size to 2 gigabytes (GB) on a 64-bit system by setting 
-        //the<gcAllowVeryLargeObjects> configuration element to true in the run-time environment.
-        // Demonstrates:
-        //      ConcurrentDictionary<TKey, TValue> ctor(concurrencyLevel, initialCapacity)
-        //      ConcurrentDictionary<TKey, TValue>[TKey]
-        public void Start()
-        {
-            // We know how many items we want to insert into the ConcurrentDictionary.
-            // So set the initial capacity to some prime number above that, to ensure that
-            // the ConcurrentDictionary does not need to be resized while initializing it.
-            int NUMITEMS = 64;
-            int initialCapacity = 101;
-
-            // The higher the concurrencyLevel, the higher the theoretical number of operations
-            // that could be performed concurrently on the ConcurrentDictionary.  However, global
-            // operations like resizing the dictionary take longer as the concurrencyLevel rises.
-            // For the purposes of this example, we'll compromise at numCores * 2.
-            int numProcs = Environment.ProcessorCount;
-            int concurrencyLevel = numProcs * 2;
-
-            // Construct the dictionary with the desired concurrencyLevel and initialCapacity
-            ConcurrentDictionary<int, int> cd = new ConcurrentDictionary<int, int>(concurrencyLevel, initialCapacity);
-
-            // Initialize the dictionary
-            for (int i = 0; i < NUMITEMS; i++) 
-                cd[i] = i * i;
-
-            Console.WriteLine($"The square of 23 is {cd[23]} (should be {23 * 23})");
-        }
-    }
-    class ConcurrentQueues
-    {
-        // Represents a thread-safe first in-first out (FIFO) collection.
-        // Demonstrates:
-        // ConcurrentQueue<T>.Enqueue()
-        // ConcurrentQueue<T>.TryPeek()
-        // ConcurrentQueue<T>.TryDequeue()
-        public void Start()
-        {
-            // Construct a ConcurrentQueue.
-            ConcurrentQueue<int> cq = new ConcurrentQueue<int>();
-
-
-            // Populate the queue.
-            for (int i = 0; i < 10000; i++)
-                cq.Enqueue(i);
-
-            // Peek at the first element.
-            int result;
-            if (!cq.TryPeek(out result))
-                Console.WriteLine($"CQ: TryPeek failed when it should have succeeded");
-            else if (result != 0)
-                Console.WriteLine($"CQ: Expected TryPeek result of 0, got {result}");
-
-            int outerSum = 0;
-            // An action to consume the ConcurrentQueue.
-            Action action = () =>
-            {
-                int localSum = 0;
-                int localValue;
-                while (cq.TryDequeue(out localValue)) localSum += localValue;
-                Interlocked.Add(ref outerSum, localSum);
-            };
-
-            // Start 4 concurrent consuming actions.
-            Parallel.Invoke(action, action, action, action);
-
-            Console.WriteLine($"outerSum = {outerSum}, should be 49995000");
-        }
-    }
-    class ByFileExtension : IComparer<string>
-    {
-        // Defines a comparer to create a sorted set
-        // that is sorted by the file extensions.
-        string xExt, yExt;
-
-        CaseInsensitiveComparer caseiComp = new CaseInsensitiveComparer();
-
-        public int Compare(string x, string y)
-        {
-            // Parse the extension from the file name.
-            xExt = x.Substring(x.LastIndexOf(".") + 1);
-            yExt = y.Substring(y.LastIndexOf(".") + 1);
-
-            // Compare the file extensions.
-            int vExt = caseiComp.Compare(xExt, yExt);
-            if (vExt != 0)
-                return vExt;
-            else
-                // The extension is the same,
-                // so compare the filenames.
-                return caseiComp.Compare(x, y);
-        }
-    }  
-    class LinearSearches
-    {
-        public int linearSearch(int[] arr, int key)
-        {
-            for (int i = 0; i < arr.Length; i++)
-            {
-                if (arr[i] == key)
-                {
-                    return i;
-                }
-            }
-            return -1;
         }
     }
     class Hashtables
@@ -905,108 +675,104 @@ namespace Collection
 
         }
     }
-    class Dictionarys2
+    class HybridDictionarys
     {
         public void Start()
         {
-            // Create a new dictionary of strings, with string keys.
-            //
-            Dictionary<string, string> openWith = new Dictionary<string, string>();
+            // Creates and initializes a new HybridDictionary.
+            HybridDictionary myCol = new HybridDictionary();
 
-            // Add some elements to the dictionary. There are no
-            // duplicate keys, but some of the values are duplicates.
-            openWith.Add("txt", "notepad.exe");
-            openWith.Add("bmp", "paint.exe");
-            openWith.Add("dib", "paint.exe");
-            openWith.Add("rtf", "wordpad.exe");
+            myCol.Add("Braeburn Apples", "1.49");
+            myCol.Add("Fuji Apples", "1.29");
+            myCol.Add("Gala Apples", "1.49");
+            myCol.Add("Golden Delicious Apples", "1.29");
+            myCol.Add("Granny Smith Apples", "0.89");
+            myCol.Add("Red Delicious Apples", "0.99");
+            myCol.Add("Plantain Bananas", "1.49");
+            myCol.Add("Yellow Bananas", "0.79");
+            myCol.Add("Strawberries", "3.33");
+            myCol.Add("Cranberries", "5.98");
+            myCol.Add("Navel Oranges", "1.29");
+            myCol.Add("Grapes", "1.99");
+            myCol.Add("Honeydew Melon", "0.59");
+            myCol.Add("Seedless Watermelon", "0.49");
+            myCol.Add("Pineapple", "1.49");
+            myCol.Add("Nectarine", "1.99");
+            myCol.Add("Plums", "1.69");
+            myCol.Add("Peaches", "1.99");
 
-            // The Add method throws an exception if the new key is
-            // already in the dictionary.
-            try
-            {
-                openWith.Add("txt", "winword.exe");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine("An element with Key = \"txt\" already exists.");
-            }
+            // Display the contents of the collection using foreach. This is the preferred method.
+            Console.WriteLine("Displays the elements using foreach:");
+            PrintKeysAndValues1(myCol);
 
-            // The Item property is another name for the indexer, so you
-            // can omit its name when accessing elements.
-            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}." );
+            // Display the contents of the collection using the enumerator.
+            Console.WriteLine("Displays the elements using the IDictionaryEnumerator:");
+            PrintKeysAndValues2(myCol);
 
-            // The indexer can be used to change the value associated
-            // with a key.
-            openWith["rtf"] = "winword.exe";
-            Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+            // Display the contents of the collection using the Keys, Values, Count, and Item properties.
+            Console.WriteLine("Displays the elements using the Keys, Values, Count, and Item properties:");
+            PrintKeysAndValues3(myCol);
 
-            // If a key does not exist, setting the indexer for that key
-            // adds a new key/value pair.
-            openWith["doc"] = "winword.exe";
+            // Copies the HybridDictionary to an array with DictionaryEntry elements.
+            DictionaryEntry[] myArr = new DictionaryEntry[myCol.Count];
+            myCol.CopyTo(myArr, 0);
 
-            // The indexer throws an exception if the requested key is
-            // not in the dictionary.
-            try
-            {
-                Console.WriteLine("For key = \"tif\", value = {0}.",
-                    openWith["tif"]);
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.WriteLine("Key = \"tif\" is not found.");
-            }
+            // Displays the values in the array.
+            Console.WriteLine("Displays the elements in the array:");
+            Console.WriteLine("   KEY                       VALUE");
+            for (int i = 0; i < myArr.Length; i++)
+                Console.WriteLine($"   {myArr[i].Key,-25} {myArr[i].Value}");
+            Console.WriteLine();
 
-            // When a program often has to try keys that turn out not to
-            // be in the dictionary, TryGetValue can be a more efficient
-            // way to retrieve values.
-            string value = "";
-            if (openWith.TryGetValue("tif", out value))
-            {
-                Console.WriteLine("For key = \"tif\", value = {0}.", value);
-            }
+            // Searches for a key.
+            if (myCol.Contains("Kiwis"))
+                Console.WriteLine("The collection contains the key \"Kiwis\".");
             else
-            {
-                Console.WriteLine("Key = \"tif\" is not found.");
-            }
-
-            // ContainsKey can be used to test keys before inserting
-            // them.
-            if (!openWith.ContainsKey("ht"))
-            {
-                openWith.Add("ht", "hypertrm.exe");
-                Console.WriteLine($"Value added for key = \"ht\": {openWith["ht"]}");
-            }
-
-            // When you use foreach to enumerate dictionary elements,
-            // the elements are retrieved as KeyValuePair objects.
+                Console.WriteLine("The collection does not contain the key \"Kiwis\".");
             Console.WriteLine();
-            foreach (KeyValuePair<string, string> kvp in openWith)
-                Console.WriteLine($"Key = {kvp.Key}, Value = {kvp.Value}" );
 
-            // To get the values alone, use the Values property.
-            Dictionary<string, string>.ValueCollection valueColl = openWith.Values;
+            // Deletes a key.
+            myCol.Remove("Plums");
+            Console.WriteLine("The collection contains the following elements after removing \"Plums\":");
+            PrintKeysAndValues1(myCol);
 
-            // The elements of the ValueCollection are strongly typed
-            // with the type that was specified for dictionary values.
+            // Clears the entire collection.
+            myCol.Clear();
+            Console.WriteLine("The collection contains the following elements after it is cleared:");
+            PrintKeysAndValues1(myCol);
+        }
+
+        // Uses the foreach statement which hides the complexity of the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public static void PrintKeysAndValues1(IDictionary myCol)
+        {
+            Console.WriteLine("   KEY                       VALUE");
+            foreach (DictionaryEntry de in myCol)
+                Console.WriteLine($"   {de.Key,-25} {de.Value}");
             Console.WriteLine();
-            foreach (string s in valueColl)
-                Console.WriteLine($"Value = {s}" );
+        }
 
-            // To get the keys alone, use the Keys property.
-            Dictionary<string, string>.KeyCollection keyColl = openWith.Keys;
-
-            // The elements of the KeyCollection are strongly typed
-            // with the type that was specified for dictionary keys.
+        // Uses the enumerator.
+        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
+        public static void PrintKeysAndValues2(IDictionary myCol)
+        {
+            IDictionaryEnumerator myEnumerator = myCol.GetEnumerator();
+            Console.WriteLine("   KEY                       VALUE");
+            while (myEnumerator.MoveNext())
+                Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}");
             Console.WriteLine();
-            foreach (string s in keyColl)
-                Console.WriteLine($"Key = {s}" );
+        }
 
-            // Use the Remove method to remove a key/value pair.
-            Console.WriteLine("\nRemove(\"doc\")");
-            openWith.Remove("doc");
+        // Uses the Keys, Values, Count, and Item properties.
+        public static void PrintKeysAndValues3(HybridDictionary myCol)
+        {
+            String[] myKeys = new String[myCol.Count];
+            myCol.Keys.CopyTo(myKeys, 0);
 
-            if (!openWith.ContainsKey("doc"))
-                Console.WriteLine("Key \"doc\" is not found.");
+            Console.WriteLine("   INDEX KEY                       VALUE");
+            for (int i = 0; i < myCol.Count; i++)
+                Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}");
+            Console.WriteLine();
         }
     }
     class Int16Collection : CollectionBase
@@ -1144,25 +910,18 @@ namespace Collection
             Console.WriteLine();
         }
     }
-    class Comparers
+    class LinearSearches
     {
-        public void Start()
+        public int linearSearch(int[] arr, int key)
         {
-            // Creates the strings to compare.
-            String str1 = "llegar";
-            String str2 = "lugar";
-
-            Console.WriteLine($"Comparing \"{str1}\" and \"{str2}\" ...");
-
-            // Uses the DefaultInvariant Comparer.
-            Console.WriteLine($"   Invariant Comparer: {Comparer.DefaultInvariant.Compare(str1, str2)}");
-
-            // Uses the Comparer based on the culture "es-ES" (Spanish - Spain, international sort).
-            Comparer myCompIntl = new Comparer(new CultureInfo("es-ES", false));
-            Console.WriteLine($"   International Sort: {myCompIntl.Compare( str1, str2)}");
-
-            // Uses the Comparer based on the culture identifier 0x040A (Spanish - Spain, traditional sort).
-            Comparer myCompTrad = new Comparer(new CultureInfo(0x040A, false));
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i] == key)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
     class LinkedLists
@@ -1179,13 +938,13 @@ namespace Collection
 
         public void CreateLinkedList()
         {
-           
+
             // Create the link list.
             string[] words = { "the", "fox", "jumps", "over", "the", "dog" };
             LinkedList<string> sentence = new LinkedList<string>(words);
             Console.WriteLine($"sentence.Contains(\"jumps\") = {sentence.Contains("jumps")}");
             Display(sentence, "The linked list values:");
-            
+
 
             // Add the word 'today' to the beginning of the linked list.
             sentence.AddFirst("today");
@@ -1331,252 +1090,6 @@ namespace Collection
             Console.WriteLine();
         }
     }
-    class Collections
-    {
-        public void Start()
-        {
-            Collection<string> dinosaurs = new Collection<string>();
-            
-            dinosaurs.Add("Psitticosaurus");
-            dinosaurs.Add("Caudipteryx");
-            dinosaurs.Add("Compsognathus");
-            dinosaurs.Add("Muttaburrasaurus");
-
-            Console.WriteLine($"{dinosaurs.Count} dinosaurs:");
-            Display(dinosaurs);
-
-            Console.WriteLine($"\nIndexOf(\"Muttaburrasaurus\"): {dinosaurs.IndexOf("Muttaburrasaurus")} ");
-
-            Console.WriteLine($"\nContains(\"Caudipteryx\"): {dinosaurs.Contains("Caudipteryx")} ");
-
-            Console.WriteLine($"\nInsert(2, \"Nanotyrannus\")");
-            dinosaurs.Insert(2, "Nanotyrannus");
-            Display(dinosaurs);
-
-            Console.WriteLine($"\ndinosaurs[2]: {dinosaurs[2]}");
-            Console.WriteLine("\ndinosaurs[2] = \"Microraptor\"");
-            dinosaurs[2] = "Microraptor";
-            Display(dinosaurs);
-
-            Console.WriteLine("\nRemove(\"Microraptor\")");
-            dinosaurs.Remove("Microraptor");
-            Display(dinosaurs);
-
-            Console.WriteLine("\nRemoveAt(0)");
-            dinosaurs.RemoveAt(0);
-            Display(dinosaurs);
-
-            Console.WriteLine("\ndinosaurs.Clear()");
-            dinosaurs.Clear();
-            Console.WriteLine("Count: {0}", dinosaurs.Count);
-        }
-
-        private void Display(Collection<string> dinosaurs)
-        {
-            Console.WriteLine();
-            foreach (string item in dinosaurs)
-                Console.WriteLine(item);
-        }
-    }
-    class ReadOnlyCollection
-    {
-       public void Start()
-        {
-            List<string> dinosaurs = new List<string>();
-
-            dinosaurs.Add("Tyrannosaurus");
-            dinosaurs.Add("Amargasaurus");
-            dinosaurs.Add("Deinonychus");
-            dinosaurs.Add("Compsognathus");
-
-            ReadOnlyCollection<string> readOnlyDinosaurs = new ReadOnlyCollection<string>(dinosaurs);
-
-            Console.WriteLine();
-            foreach (string dinosaur in readOnlyDinosaurs)
-                Console.WriteLine(dinosaur);
-
-
-            Console.WriteLine($"\nCount: {readOnlyDinosaurs.Count}");
-            Console.WriteLine($"\nContains(\"Deinonychus\"): {readOnlyDinosaurs.Contains("Deinonychus")}");
-            Console.WriteLine($"\nreadOnlyDinosaurs[3]: {readOnlyDinosaurs[3]}");
-            Console.WriteLine($"\nIndexOf(\"Compsognathus\"): {readOnlyDinosaurs.IndexOf("Compsognathus")}");
-            Console.WriteLine("\nInsert into the wrapped List:");
-            Console.WriteLine("Insert(2, \"Oviraptor\")");
-            dinosaurs.Insert(2, "Oviraptor");
-
-            Console.WriteLine();
-            foreach (string dinosaur in readOnlyDinosaurs)
-                Console.WriteLine(dinosaur);
-
-            string[] dinoArray = new string[readOnlyDinosaurs.Count + 2];
-            readOnlyDinosaurs.CopyTo(dinoArray, 1);
-
-            Console.WriteLine($"\nCopied array has {dinoArray.Length} elements:");
-
-            foreach (string dinosaur in dinoArray)
-                Console.WriteLine($"\"{dinosaur}\"");
-        }
-    }
-    class BitVector32s
-    {
-        public void Start()
-        {
-            // Creates and initializes a BitVector32 with all bit flags set to FALSE.
-            BitVector32 myBV1 = new BitVector32(0);
-
-            // Creates masks to isolate each of the first five bit flags.
-            int myBit1 = BitVector32.CreateMask();
-            int myBit2 = BitVector32.CreateMask(myBit1);
-            int myBit3 = BitVector32.CreateMask(myBit2);
-            int myBit4 = BitVector32.CreateMask(myBit3);
-            int myBit5 = BitVector32.CreateMask(myBit4);
-
-            // Sets the alternating bits to TRUE.
-            Console.WriteLine("Setting alternating bits to TRUE:");
-            Console.WriteLine($"   Initial:         {myBV1.ToString()}" );
-            myBV1[myBit1] = true;
-            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
-            myBV1[myBit3] = true;
-            Console.WriteLine($"   myBit3 = TRUE:   {myBV1.ToString()}");
-            myBV1[myBit5] = true;
-            Console.WriteLine($"   myBit5 = TRUE:   {myBV1.ToString()}");
-
-            BitVector32 myBV2 = new BitVector32(0);
-
-            // mySect3, which uses exactly one bit, can also be used as a bit flag.
-            BitVector32.Section mySect1 = BitVector32.CreateSection(6);
-            BitVector32.Section mySect2 = BitVector32.CreateSection(3, mySect1);
-            BitVector32.Section mySect3 = BitVector32.CreateSection(1, mySect2);
-            BitVector32.Section mySect4 = BitVector32.CreateSection(15, mySect3);
-
-            // Displays the values of the sections.
-            Console.WriteLine("Initial values:");
-            Console.WriteLine($"\tmySect1: { myBV2[mySect1]}");
-            Console.WriteLine($"\tmySect2: { myBV2[mySect2]}");
-            Console.WriteLine($"\tmySect3: { myBV2[mySect3]}");
-            Console.WriteLine($"\tmySect4: { myBV2[mySect4]}");
-
-            // Sets each section to a new value and displays the value of the BitVector32 at each step.
-            Console.WriteLine("Changing the values of each section:");
-            Console.WriteLine($"\tInitial:    \t{myBV2.ToString()}");
-            myBV2[mySect1] = 5;
-            Console.WriteLine($"\tmySect1 = 5:\t{myBV2.ToString()}");
-            myBV2[mySect2] = 3;
-            Console.WriteLine($"\tmySect2 = 3:\t{myBV2.ToString()}");
-            myBV2[mySect3] = 1;
-            Console.WriteLine($"\tmySect3 = 1:\t{myBV2.ToString()}");
-            myBV2[mySect4] = 9;
-            Console.WriteLine($"\tmySect4 = 9:\t{myBV2.ToString()}");
-
-            // Displays the values of the sections.
-            Console.WriteLine("New values:");
-            Console.WriteLine($"\tmySect1: {myBV2[mySect1]}");
-            Console.WriteLine($"\tmySect2: {myBV2[mySect2]}");
-            Console.WriteLine($"\tmySect3: {myBV2[mySect3]}");
-            Console.WriteLine($"\tmySect4: {myBV2[mySect4]}");
-
-        }
-    }
-    class HybridDictionarys
-    {
-        public void Start()
-        {
-            // Creates and initializes a new HybridDictionary.
-            HybridDictionary myCol = new HybridDictionary();
-
-            myCol.Add("Braeburn Apples", "1.49");
-            myCol.Add("Fuji Apples", "1.29");
-            myCol.Add("Gala Apples", "1.49");
-            myCol.Add("Golden Delicious Apples", "1.29");
-            myCol.Add("Granny Smith Apples", "0.89");
-            myCol.Add("Red Delicious Apples", "0.99");
-            myCol.Add("Plantain Bananas", "1.49");
-            myCol.Add("Yellow Bananas", "0.79");
-            myCol.Add("Strawberries", "3.33");
-            myCol.Add("Cranberries", "5.98");
-            myCol.Add("Navel Oranges", "1.29");
-            myCol.Add("Grapes", "1.99");
-            myCol.Add("Honeydew Melon", "0.59");
-            myCol.Add("Seedless Watermelon", "0.49");
-            myCol.Add("Pineapple", "1.49");
-            myCol.Add("Nectarine", "1.99");
-            myCol.Add("Plums", "1.69");
-            myCol.Add("Peaches", "1.99");
-
-            // Display the contents of the collection using foreach. This is the preferred method.
-            Console.WriteLine("Displays the elements using foreach:");
-            PrintKeysAndValues1(myCol);
-
-            // Display the contents of the collection using the enumerator.
-            Console.WriteLine("Displays the elements using the IDictionaryEnumerator:");
-            PrintKeysAndValues2(myCol);
-
-            // Display the contents of the collection using the Keys, Values, Count, and Item properties.
-            Console.WriteLine("Displays the elements using the Keys, Values, Count, and Item properties:");
-            PrintKeysAndValues3(myCol);
-
-            // Copies the HybridDictionary to an array with DictionaryEntry elements.
-            DictionaryEntry[] myArr = new DictionaryEntry[myCol.Count];
-            myCol.CopyTo(myArr, 0);
-
-            // Displays the values in the array.
-            Console.WriteLine("Displays the elements in the array:");
-            Console.WriteLine("   KEY                       VALUE");
-            for (int i = 0; i < myArr.Length; i++)
-                Console.WriteLine($"   {myArr[i].Key,-25} {myArr[i].Value}");
-            Console.WriteLine();
-
-            // Searches for a key.
-            if (myCol.Contains("Kiwis"))
-                Console.WriteLine("The collection contains the key \"Kiwis\".");
-            else
-                Console.WriteLine("The collection does not contain the key \"Kiwis\".");
-            Console.WriteLine();
-
-            // Deletes a key.
-            myCol.Remove("Plums");
-            Console.WriteLine("The collection contains the following elements after removing \"Plums\":");
-            PrintKeysAndValues1(myCol);
-
-            // Clears the entire collection.
-            myCol.Clear();
-            Console.WriteLine("The collection contains the following elements after it is cleared:");
-            PrintKeysAndValues1(myCol);
-        }
-
-        // Uses the foreach statement which hides the complexity of the enumerator.
-        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
-        public static void PrintKeysAndValues1(IDictionary myCol)
-        {
-            Console.WriteLine("   KEY                       VALUE");
-            foreach (DictionaryEntry de in myCol)
-                Console.WriteLine($"   {de.Key,-25} {de.Value}" );
-            Console.WriteLine();
-        }
-
-        // Uses the enumerator.
-        // NOTE: The foreach statement is the preferred way of enumerating the contents of a collection.
-        public static void PrintKeysAndValues2(IDictionary myCol)
-        {
-            IDictionaryEnumerator myEnumerator = myCol.GetEnumerator();
-            Console.WriteLine("   KEY                       VALUE");
-            while (myEnumerator.MoveNext())
-                Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}");
-            Console.WriteLine();
-        }
-
-        // Uses the Keys, Values, Count, and Item properties.
-        public static void PrintKeysAndValues3(HybridDictionary myCol)
-        {
-            String[] myKeys = new String[myCol.Count];
-            myCol.Keys.CopyTo(myKeys, 0);
-
-            Console.WriteLine("   INDEX KEY                       VALUE");
-            for (int i = 0; i < myCol.Count; i++)
-                Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}");
-            Console.WriteLine();
-        }
-    }
     class ListDictionarys
     {
         //This is a simple implementation of IDictionary using a singly linked list.
@@ -1614,7 +1127,7 @@ namespace Collection
             Console.WriteLine("Displays the elements in the array:");
             Console.WriteLine("   KEY                       VALUE");
             for (int i = 0; i < myArr.Length; i++)
-                Console.WriteLine($"   {myArr[i].Key,-25} {myArr[i].Value}" );
+                Console.WriteLine($"   {myArr[i].Key,-25} {myArr[i].Value}");
             Console.WriteLine();
 
             // Searches for a key.
@@ -1688,8 +1201,8 @@ namespace Collection
             PrintKeysAndValues2(myCol);
 
             // Gets a value either by index or by key.
-            Console.WriteLine($"Index 1 contains the value {myCol[1]}." );
-            Console.WriteLine($"Key \"red\" has the value {myCol["red"]}." );
+            Console.WriteLine($"Index 1 contains the value {myCol[1]}.");
+            Console.WriteLine($"Key \"red\" has the value {myCol["red"]}.");
             Console.WriteLine();
 
             // Copies the values to a string array and displays the string array.
@@ -1714,7 +1227,7 @@ namespace Collection
         {
             Console.WriteLine("   KEY        VALUE");
             foreach (String s in myCol.AllKeys)
-                Console.WriteLine($"   {s,-10} {myCol[s]}" );
+                Console.WriteLine($"   {s,-10} {myCol[s]}");
             Console.WriteLine();
         }
         public static void PrintKeysAndValues2(NameValueCollection myCol)
@@ -1799,7 +1312,435 @@ namespace Collection
         {
             Console.WriteLine("   KEY                       VALUE");
             while (myEnumerator.MoveNext())
-                Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}" );
+                Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}");
+        }
+    }
+    class ParallelCollection
+    {
+        BlockingCollection<char> bc;
+        public void Producer()
+        {
+            for (char ch = 'A'; ch <= 'Z'; ch++)
+            {
+                bc.Add(ch);
+                Console.WriteLine("Producing " + ch);
+            }
+        }
+
+        public void Consumer()
+        {
+            for (int i = 0; i < 26; i++)
+                Console.WriteLine("Consuming " + bc.Take());
+        }
+
+        public void Start()
+        {
+            bc = new BlockingCollection<char>(11);
+            Parallel.Invoke(Producer, Consumer);
+            bc.Dispose();
+        }
+    }
+    class Queues
+    {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //Queue<T>           O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        public void CreateQueue()
+        {
+            Queue<string> numbers = new Queue<string>();
+            numbers.Enqueue("one");
+            numbers.Enqueue("two");
+            numbers.Enqueue("three");
+            numbers.Enqueue("four");
+            numbers.Enqueue("five");
+
+            // A queue can be enumerated without disturbing its contents.
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nDequeuing '{numbers.Dequeue()}'");
+            Console.WriteLine($"Peek at next item to dequeue: {numbers.Dequeue()}");
+            Console.WriteLine($"Dequeuing '{numbers.Dequeue()}'");
+
+            // Create a copy of the queue, using the ToArray method and the
+            // constructor that accepts an IEnumerable<T>.
+            Queue<string> queueCopy = new Queue<string>(numbers.ToArray());
+
+            Console.WriteLine("\nContents of the first copy:");
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            // Create an array twice the size of the queue and copy the
+            // elements of the queue, starting at the middle of the
+            // array.
+            string[] array2 = new string[numbers.Count * 2];
+            numbers.CopyTo(array2, numbers.Count);
+
+            foreach (string number in array2)
+                Console.WriteLine(number);
+
+            // Create a second queue, using the constructor that accepts an
+            // IEnumerable(Of T).
+            Queue<string> queueCopy2 = new Queue<string>(array2);
+            foreach (string number in numbers)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nqueueCopy.Contains(\"four\") = {queueCopy.Contains("four")}");
+            Console.WriteLine("\nqueueCopy.Clear()");
+            queueCopy.Clear();
+            Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
+        }
+    }
+    class ReadOnlyCollection
+    {
+        public void Start()
+        {
+            List<string> dinosaurs = new List<string>();
+
+            dinosaurs.Add("Tyrannosaurus");
+            dinosaurs.Add("Amargasaurus");
+            dinosaurs.Add("Deinonychus");
+            dinosaurs.Add("Compsognathus");
+
+            ReadOnlyCollection<string> readOnlyDinosaurs = new ReadOnlyCollection<string>(dinosaurs);
+
+            Console.WriteLine();
+            foreach (string dinosaur in readOnlyDinosaurs)
+                Console.WriteLine(dinosaur);
+
+
+            Console.WriteLine($"\nCount: {readOnlyDinosaurs.Count}");
+            Console.WriteLine($"\nContains(\"Deinonychus\"): {readOnlyDinosaurs.Contains("Deinonychus")}");
+            Console.WriteLine($"\nreadOnlyDinosaurs[3]: {readOnlyDinosaurs[3]}");
+            Console.WriteLine($"\nIndexOf(\"Compsognathus\"): {readOnlyDinosaurs.IndexOf("Compsognathus")}");
+            Console.WriteLine("\nInsert into the wrapped List:");
+            Console.WriteLine("Insert(2, \"Oviraptor\")");
+            dinosaurs.Insert(2, "Oviraptor");
+
+            Console.WriteLine();
+            foreach (string dinosaur in readOnlyDinosaurs)
+                Console.WriteLine(dinosaur);
+
+            string[] dinoArray = new string[readOnlyDinosaurs.Count + 2];
+            readOnlyDinosaurs.CopyTo(dinoArray, 1);
+
+            Console.WriteLine($"\nCopied array has {dinoArray.Length} elements:");
+
+            foreach (string dinosaur in dinoArray)
+                Console.WriteLine($"\"{dinosaur}\"");
+        }
+    }
+    class Stacks
+    {
+        //                                                             Time Complexities                                        |   Space Complexities
+        //Collection                      AVERAGE                              |                Worst                           |
+        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //Stacks<T>          O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //   
+
+        //This feature makes it LIFO data structure.LIFO stands
+        //for Last-in-first-out. Here, the element which is placed
+        //(inserted or added) last, is accessed first.In stack terminology,
+        //insertion operation is called PUSH operation and removal operation
+        //is called POP operation.
+        public void CreateSteack()
+        {
+            Stack<string> numbers = new Stack<string>();
+            numbers.Push("One");
+            numbers.Push("Two");
+            numbers.Push("Three");
+            numbers.Push("Four");
+            numbers.Push("Five");
+
+            // A stack can be enumerated without disturbing its contents.
+            foreach (string number in numbers)         
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nPopping '{numbers.Pop()}'");
+            Console.WriteLine($"Peek at next item to destack: {numbers.Peek()}");
+            Console.WriteLine($"Popping '{numbers.Pop()}'");
+
+            // Create a copy of the stack, using the ToArray method and the
+            // constructor that accepts an IEnumerable<T>.
+            Stack<string> stack2 = new Stack<string>(numbers.ToArray());
+
+            Console.WriteLine("\n Contents of the first copy:");
+            foreach (string number in stack2)
+                Console.WriteLine(number);
+
+            // Create an array twice the size of the stack and copy the
+            // elements of the stack, starting at the middle of the
+            // array.
+            string[] array2 = new string[numbers.Count * 2];
+            numbers.CopyTo(array2, numbers.Count);
+
+            // Create a second stack, using the constructor that accepts an
+            // IEnumerable(Of T).
+            Stack<string> stack3 = new Stack<string>(array2);
+
+            Console.WriteLine("\nContents of the second copy, with duplicates and nulls:");
+            foreach (string number in stack3)
+                Console.WriteLine(number);
+
+            Console.WriteLine($"\nstack2.Contains(\"four\") = {stack2.Contains("four")}");
+
+            Console.WriteLine("\nstack2.Clear()");
+            stack2.Clear();
+            Console.WriteLine($"\nnstack2.Count = {stack2.Count}");
+        }
+    }
+    class SortedDictionarys
+    {
+        public void Start()
+        {
+            // Create a new sorted dictionary of strings, with string
+            SortedDictionary<string, string> openWith = new SortedDictionary<string, string>();
+
+            // Add some elements to the dictionary. There are no
+            // duplicate keys, but some of the values are duplicates.
+
+            openWith.Add("txt", "notepad.exe");
+            openWith.Add("bmp", "paint.exe");
+            openWith.Add("dib", "paint.exe");
+            openWith.Add("rtf", "wordpad.exe");
+
+            // already in the dictionary.
+            try
+            {
+                openWith.Add("txt", "winword.exe");
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("An element with Key = \"txt\" already exists.");
+            }
+
+            // The Item property is another name for the indexer, so you
+            // can omit its name when accessing elements.
+            Console.WriteLine("For key = \"rtf\", value = {0}.",
+                openWith["rtf"]);
+
+            // The indexer can be used to change the value associated
+            // with a key.
+            openWith["rtf"] = "winword.exe";
+            Console.WriteLine("For key = \"rtf\", value = {0}.",
+                openWith["rtf"]);
+
+            // If a key does not exist, setting the indexer for that key
+            // adds a new key/value pair.
+            openWith["doc"] = "winword.exe";
+
+            // The indexer throws an exception if the requested key is
+            // not in the dictionary.
+            try
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.",
+                    openWith["tif"]);
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // When a program often has to try keys that turn out not to
+            // be in the dictionary, TryGetValue can be a more efficient
+            // way to retrieve values.
+            string value = "";
+            if (openWith.TryGetValue("tif", out value))
+            {
+                Console.WriteLine("For key = \"tif\", value = {0}.", value);
+            }
+            else
+            {
+                Console.WriteLine("Key = \"tif\" is not found.");
+            }
+
+            // ContainsKey can be used to test keys before inserting
+            // them.
+            if (!openWith.ContainsKey("ht"))
+            {
+                openWith.Add("ht", "hypertrm.exe");
+                Console.WriteLine("Value added for key = \"ht\": {0}",
+                    openWith["ht"]);
+            }
+
+            // When you use foreach to enumerate dictionary elements,
+            // the elements are retrieved as KeyValuePair objects.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> kvp in openWith)
+            {
+                Console.WriteLine("Key = {0}, Value = {1}",
+                    kvp.Key, kvp.Value);
+            }
+
+            // To get the values alone, use the Values property.
+            SortedDictionary<string, string>.ValueCollection valueColl =
+                openWith.Values;
+
+            // The elements of the ValueCollection are strongly typed
+            // with the type that was specified for dictionary values.
+            Console.WriteLine();
+            foreach (string s in valueColl)
+            {
+                Console.WriteLine("Value = {0}", s);
+            }
+
+            // To get the keys alone, use the Keys property.
+            SortedDictionary<string, string>.KeyCollection keyColl =
+                openWith.Keys;
+
+            // The elements of the KeyCollection are strongly typed
+            // with the type that was specified for dictionary keys.
+            Console.WriteLine();
+            foreach (string s in keyColl)
+            {
+                Console.WriteLine("Key = {0}", s);
+            }
+
+            // Use the Remove method to remove a key/value pair.
+            Console.WriteLine("\nRemove(\"doc\")");
+            openWith.Remove("doc");
+
+            if (!openWith.ContainsKey("doc"))
+            {
+                Console.WriteLine("Key \"doc\" is not found.");
+            }
+        }
+    }
+    class SortedSets
+    {
+        //                                                                  Time Complexities                                                    |   Space Complexities
+        //Collection                      AVERAGE                                  |                Worst                                        |
+        //                   Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add          |
+        //HashSet<T>         O(n)       O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(1)       O(1)         O(n)         |        O(n)
+        //
+        public void Start()
+        {
+            try
+            {
+                // Get a list of the files to use for the sorted set.
+                IEnumerable<string> files1 =
+                    Directory.EnumerateFiles(@"\\archives\2007\media",
+                    "*", SearchOption.AllDirectories);
+
+                // Create a sorted set using the ByFileExtension comparer.
+                var mediaFiles1 = new SortedSet<string>(new ByFileExtension());
+
+                // Note that there is a SortedSet constructor that takes an IEnumerable,
+                // but to remove the path information they must be added individually.
+                foreach (string f in files1)
+                {
+                    mediaFiles1.Add(f.Substring(f.LastIndexOf(@"\") + 1));
+                }
+
+                // Remove elements that have non-media extensions.
+                // See the 'IsDoc' method.
+                Console.WriteLine("Remove docs from the set...");
+                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
+                mediaFiles1.RemoveWhere(IsDoc);
+                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
+
+                Console.WriteLine();
+
+                // List all the avi files.
+                SortedSet<string> aviFiles = mediaFiles1.GetViewBetween("avi", "avj");
+
+                Console.WriteLine("AVI files:");
+                foreach (string avi in aviFiles)
+                {
+                    Console.WriteLine($"\t{avi}");
+                }
+
+                Console.WriteLine();
+
+                // Create another sorted set.
+                IEnumerable<string> files2 =
+                    Directory.EnumerateFiles(@"\\archives\2008\media",
+                        "*", SearchOption.AllDirectories);
+
+                var mediaFiles2 = new SortedSet<string>(new ByFileExtension());
+
+                foreach (string f in files2)
+                {
+                    mediaFiles2.Add(f.Substring(f.LastIndexOf(@"\") + 1));
+                }
+
+                // Remove elements in mediaFiles1 that are also in mediaFiles2.
+                Console.WriteLine("Remove duplicates (of mediaFiles2) from the set...");
+                Console.WriteLine($"\tCount before: {mediaFiles1.Count}");
+                mediaFiles1.ExceptWith(mediaFiles2);
+                Console.WriteLine($"\tCount after: {mediaFiles1.Count}");
+
+                Console.WriteLine();
+
+                Console.WriteLine("List of mediaFiles1:");
+                foreach (string f in mediaFiles1)
+                {
+                    Console.WriteLine($"\t{f}");
+                }
+
+                // Create a set of the sets.
+                IEqualityComparer<SortedSet<string>> comparer =
+                    SortedSet<string>.CreateSetComparer();
+
+                var allMedia = new HashSet<SortedSet<string>>(comparer);
+                allMedia.Add(mediaFiles1);
+                allMedia.Add(mediaFiles2);
+            }
+            catch (IOException ioEx)
+            {
+                Console.WriteLine(ioEx.Message);
+            }
+
+            catch (UnauthorizedAccessException AuthEx)
+            {
+                Console.WriteLine(AuthEx.Message);
+            }
+        }
+
+        // Defines a predicate delegate to use
+        // for the SortedSet.RemoveWhere method.
+        private static bool IsDoc(string s)
+        {
+            s = s.ToLower();
+            return (s.EndsWith(".txt") ||
+                s.EndsWith(".xls") ||
+                s.EndsWith(".xlsx") ||
+                s.EndsWith(".pdf") ||
+                s.EndsWith(".doc") ||
+                s.EndsWith(".docx"));
+        }
+    }
+    class SortedLists
+    {
+        //--------------------------
+        //                                                                  Time Complexities                                                    |   Space Complexities
+        //Collection                      AVERAGE                                  |                Worst                                        |
+        //                   Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add          |
+        //HashSet<T>         O(n)       O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(1)       O(1)         O(n)         |        O(n)
+        //
+        public void Start()
+        {
+            // Creates and initializes a new SortedList.
+            SortedList mySL = new SortedList();
+            mySL.Add("Third", "!");
+            mySL.Add("Second", "World");
+            mySL.Add("First", "Hello");
+
+            // Displays the properties and values of the SortedList.
+            Console.WriteLine("mySL");
+            Console.WriteLine($"  Count:    {mySL.Count}");
+            Console.WriteLine($"  Capacity: {mySL.Capacity}");
+            Console.WriteLine("  Keys and Values:");
+            PrintKeysAndValues(mySL);
+        }
+
+        private void PrintKeysAndValues(SortedList mySL)
+        {
+            Console.WriteLine("\t-KEY-\t-VALUE-");
+            for (int i = 0; i < mySL.Count; i++)
+                Console.WriteLine($"\t{mySL.GetKey(i)}:\t{mySL.GetByIndex(i)}");
+            Console.WriteLine();
         }
     }
     class StringCollections
@@ -1983,15 +1924,110 @@ namespace Collection
         }
     }
 
-    class ParallelCollection
-    {
-        public void Start()
-        {
-            Parallel.Invoke(new ArrayLists().CreateArrayList, new Comparers().Start);
-            new ArrayLists().CreateArrayList();
-            new Comparers().Start();
-        }
-    }
+    ////class Dictionarys2
+    //{
+    //    public void Start()
+    //    {
+    //        // Create a new dictionary of strings, with string keys.
+    //        //
+    //        Dictionary<string, string> openWith = new Dictionary<string, string>();
+
+    //        // Add some elements to the dictionary. There are no
+    //        // duplicate keys, but some of the values are duplicates.
+    //        openWith.Add("txt", "notepad.exe");
+    //        openWith.Add("bmp", "paint.exe");
+    //        openWith.Add("dib", "paint.exe");
+    //        openWith.Add("rtf", "wordpad.exe");
+
+    //        // The Add method throws an exception if the new key is
+    //        // already in the dictionary.
+    //        try
+    //        {
+    //            openWith.Add("txt", "winword.exe");
+    //        }
+    //        catch (ArgumentException)
+    //        {
+    //            Console.WriteLine("An element with Key = \"txt\" already exists.");
+    //        }
+
+    //        // The Item property is another name for the indexer, so you
+    //        // can omit its name when accessing elements.
+    //        Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+
+    //        // The indexer can be used to change the value associated
+    //        // with a key.
+    //        openWith["rtf"] = "winword.exe";
+    //        Console.WriteLine($"For key = \"rtf\", value = {openWith["rtf"]}.");
+
+    //        // If a key does not exist, setting the indexer for that key
+    //        // adds a new key/value pair.
+    //        openWith["doc"] = "winword.exe";
+
+    //        // The indexer throws an exception if the requested key is
+    //        // not in the dictionary.
+    //        try
+    //        {
+    //            Console.WriteLine("For key = \"tif\", value = {0}.",
+    //                openWith["tif"]);
+    //        }
+    //        catch (KeyNotFoundException)
+    //        {
+    //            Console.WriteLine("Key = \"tif\" is not found.");
+    //        }
+
+    //        // When a program often has to try keys that turn out not to
+    //        // be in the dictionary, TryGetValue can be a more efficient
+    //        // way to retrieve values.
+    //        string value = "";
+    //        if (openWith.TryGetValue("tif", out value))
+    //        {
+    //            Console.WriteLine("For key = \"tif\", value = {0}.", value);
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine("Key = \"tif\" is not found.");
+    //        }
+
+    //        // ContainsKey can be used to test keys before inserting
+    //        // them.
+    //        if (!openWith.ContainsKey("ht"))
+    //        {
+    //            openWith.Add("ht", "hypertrm.exe");
+    //            Console.WriteLine($"Value added for key = \"ht\": {openWith["ht"]}");
+    //        }
+
+    //        // When you use foreach to enumerate dictionary elements,
+    //        // the elements are retrieved as KeyValuePair objects.
+    //        Console.WriteLine();
+    //        foreach (KeyValuePair<string, string> kvp in openWith)
+    //            Console.WriteLine($"Key = {kvp.Key}, Value = {kvp.Value}");
+
+    //        // To get the values alone, use the Values property.
+    //        Dictionary<string, string>.ValueCollection valueColl = openWith.Values;
+
+    //        // The elements of the ValueCollection are strongly typed
+    //        // with the type that was specified for dictionary values.
+    //        Console.WriteLine();
+    //        foreach (string s in valueColl)
+    //            Console.WriteLine($"Value = {s}");
+
+    //        // To get the keys alone, use the Keys property.
+    //        Dictionary<string, string>.KeyCollection keyColl = openWith.Keys;
+
+    //        // The elements of the KeyCollection are strongly typed
+    //        // with the type that was specified for dictionary keys.
+    //        Console.WriteLine();
+    //        foreach (string s in keyColl)
+    //            Console.WriteLine($"Key = {s}");
+
+    //        // Use the Remove method to remove a key/value pair.
+    //        Console.WriteLine("\nRemove(\"doc\")");
+    //        openWith.Remove("doc");
+
+    //        if (!openWith.ContainsKey("doc"))
+    //            Console.WriteLine("Key \"doc\" is not found.");
+    //    }
+    //}
     class Program
     {
         [Obsolete]
