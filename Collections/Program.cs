@@ -202,8 +202,11 @@ namespace Collection
 
         }
     }
-    class ConcurrentBags
+    class ConcurrentBags//fast when mixed producer-consumer scenarios
     {
+        // In mixed producer-consumer scenarios, ConcurrentBag<T> is generally
+        // much faster and more scalable than any other concurrent collection 
+        // type for both large and small workloads.
         public void Start()
         {
             ConcurrentBag<int> cd = new ConcurrentBag<int>();
@@ -1460,7 +1463,7 @@ namespace Collection
             while (myEnumerator.MoveNext())
                 Console.WriteLine($"   {myEnumerator.Key,-25} {myEnumerator.Value}");
         }
-    }
+    }//fast
     class ParallelCollection
     {
         BlockingCollection<char> bc;
