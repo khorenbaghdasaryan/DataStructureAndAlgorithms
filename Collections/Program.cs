@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Collections.Immutable;
 
 namespace Collection
 {
@@ -100,7 +102,6 @@ namespace Collection
             Console.WriteLine("   Values:");
             PrintValues(myBA5, 8);
         }
-
         private void PrintValues(IEnumerable myList, int myWidth)
         {
             int i = myWidth;
@@ -316,6 +317,132 @@ namespace Collection
             Console.WriteLine($"outerSum = {outerSum}, should be 49995000");
         }
     }
+    class ConcurrentStack
+    {
+        // Demonstrates:
+        //      ConcurrentStack<T>.Push();
+        //      ConcurrentStack<T>.TryPeek();
+        //      ConcurrentStack<T>.TryPop();
+        //      ConcurrentStack<T>.Clear();
+        //      ConcurrentStack<T>.IsEmpty;
+        public async Task StartAsync()
+        {
+            int items = 10000;
+
+            ConcurrentStack<int> stack = new ConcurrentStack<int>();
+
+            // Create an action to push items onto the stack
+            Action pusher = () =>
+            {
+                for (int i = 0; i < items; i++)
+                {
+                    stack.Push(i);
+                }
+            };
+
+            // Run the action once
+            pusher();
+
+            if (stack.TryPeek(out int result))
+            {
+                Console.WriteLine($"TryPeek() saw {result} on top of the stack.");
+            }
+            else
+            {
+                Console.WriteLine("Could not peek most recently added number.");
+            }
+
+            // Empty the stack
+            stack.Clear();
+
+            if (stack.IsEmpty)
+            {
+                Console.WriteLine("Cleared the stack.");
+            }
+
+            // Create an action to push and pop items
+            Action pushAndPop = () =>
+            {
+                Console.WriteLine($"Task started on {Task.CurrentId}");
+
+                int item;
+                for (int i = 0; i < items; i++)
+                    stack.Push(i);
+                for (int i = 0; i < items; i++)
+                    stack.TryPop(out item);
+
+                Console.WriteLine($"Task ended on {Task.CurrentId}");
+            };
+
+            // Spin up five concurrent tasks of the action
+            var tasks = new Task[5];
+            for (int i = 0; i < tasks.Length; i++)
+                tasks[i] = Task.Factory.StartNew(pushAndPop);
+
+            // Wait for all the tasks to finish up
+            await Task.WhenAll(tasks);
+
+            if (!stack.IsEmpty)
+            {
+                Console.WriteLine("Did not take all the items off the stack");
+            }
+        }
+
+        // Demonstrates:
+        //      ConcurrentStack<T>.PushRange();
+        //      ConcurrentStack<T>.TryPopRange();
+        public async Task StartAsync2()
+        {
+            int numParallelTasks = 4;
+            int numItems = 1000;
+            var stack = new ConcurrentStack<int>();
+
+            // Push a range of values onto the stack concurrently
+            await Task.WhenAll(Enumerable.Range(0, numParallelTasks).Select(i => Task.Factory.StartNew((state) =>
+            {
+                // state = i * numItems
+                int index = (int)state;
+                int[] array = new int[numItems];
+                for (int j = 0; j < numItems; j++)
+                {
+                    array[j] = index + j;
+                }
+
+                Console.WriteLine($"Pushing an array of ints from " +
+                    $"{array[0]} to {array[numItems - 1]}");
+                stack.PushRange(array);
+            }, i * numItems, CancellationToken.None, TaskCreationOptions.DenyChildAttach,
+               TaskScheduler.Default)).ToArray());
+
+            int numTotalElements = 4 * numItems;
+            int[] resultBuffer = new int[numTotalElements];
+            await Task.WhenAll(Enumerable.Range(0, numParallelTasks).Select(i => Task.Factory.StartNew(obj =>
+            {
+                int index = (int)obj;
+                int result = stack.TryPopRange(resultBuffer, index, numItems);
+
+                Console.WriteLine($"TryPopRange expected {numItems}, got {result}.");
+            }, i * numItems, CancellationToken.None, TaskCreationOptions.LongRunning,
+               TaskScheduler.Default)).ToArray());
+
+            for (int i = 0; i < numParallelTasks; i++)
+            {
+                // Create a sequence we expect to see from the stack taking the last number of the range we inserted
+                var expected = Enumerable.Range(resultBuffer[i * numItems + numItems - 1], numItems);
+
+                // Take the range we inserted, reverse it, and compare to the expected sequence
+                var areEqual = expected.SequenceEqual(resultBuffer.Skip(i * numItems).Take(numItems).Reverse());
+                if (areEqual)
+                    Console.WriteLine($"Expected a range of {expected.First()} " +
+                        $"to {expected.Last()}. Got {resultBuffer[i * numItems + numItems - 1]} " +
+                        $"to {resultBuffer[i * numItems]}");
+                else
+                    Console.WriteLine($"Unexpected consecutive ranges.");
+            }
+        }
+
+
+    }
     class Collections
     {
         public void Start()
@@ -355,7 +482,6 @@ namespace Collection
             dinosaurs.Clear();
             Console.WriteLine("Count: {0}", dinosaurs.Count);
         }
-
         private void Display(Collection<string> dinosaurs)
         {
             Console.WriteLine();
@@ -386,11 +512,12 @@ namespace Collection
     }
     class Dictionarys
     {
-        //                                                                           Time Complexities                                                 |   Space Complexities
-        //Collection                                 AVERAGE                                  |                Worst                                   |
-        //                              Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add     |
-        //Dictionary<TKey, TValue>      N/A        N/A         N/A       O(1)         O(1)    |  N/A        N/A        N/A       O(1)         O(n)    |          
-        //   
+        //                                                                         Time Complexities                                                              |   Space Complexities
+        //Collection                                        AVERAGE                                      |                Worst                                   |
+        //                            Access                  Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add     |
+        //Dictionary<TKey, TValue>    O(1) amortized by key   O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(n)       O(n)         O(n)    |       O(n)   
+        //                            O(n) amortized                     amortized  amortized
+        //
         public void Start()
         {
             // Create a new dictionary of strings, with string keys.
@@ -486,10 +613,12 @@ namespace Collection
     }
     class HashSets
     {
-        //                                                                  Time Complexities                                                    |   Space Complexities
-        //Collection                      AVERAGE                                  |                Worst                                        |
-        //                   Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add          |
-        //HashSet<T>         O(n)       O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(1)       O(1)         O(n)         |        O(n)
+        //                                                          Time Complexities                                                              |   Space Complexities
+        //Collection                         AVERAGE                                      |                Worst                                   |
+        //             Access                  Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add     |
+        //HashSet<>    O(1) amortized by key   O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(n)       O(n)         O(n)    |       O(n)   
+        //             O(n) amortized                     amortized  amortized
+        //
         public void Start()
         {
             HashSet<int> evenNumbers = new HashSet<int>();
@@ -613,7 +742,6 @@ namespace Collection
             if (!openWith.ContainsKey("doc"))
                 Console.WriteLine("Key \"doc\" is not found.");
         }
-
         [Obsolete]
         public void CaseInsensitiveComparer()
         {
@@ -641,7 +769,6 @@ namespace Collection
             Console.WriteLine($"first is in myHT2: {myHT2.ContainsKey("first")} ");
             Console.WriteLine("first is in myHT3: {0}", myHT3.ContainsKey("first"));
         }
-
         public void CollectionsUtils()
         {
             Hashtable population1 = CollectionsUtil.CreateCaseInsensitiveHashtable();
@@ -773,6 +900,24 @@ namespace Collection
             for (int i = 0; i < myCol.Count; i++)
                 Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}");
             Console.WriteLine();
+        }
+    }
+    class ImmutableQueues
+    {
+        public void Start()
+        {
+            ImmutableQueue<int> immutableQueue = ImmutableQueue.Create<int>(1);
+            foreach (var item in immutableQueue)
+                Console.WriteLine(item);            
+        }
+    }
+    class ImmutableStacks
+    {
+        public void Start()
+        {
+            ImmutableStack<int> immutableStack = ImmutableStack.Create<int>(1);
+            foreach (var item in immutableStack)
+                Console.WriteLine(item);
         }
     }
     class Int16Collection : CollectionBase
@@ -927,11 +1072,12 @@ namespace Collection
     class LinkedLists
     {
         //                                                             Time Complexities                                        |   Space Complexities
-        //Collection                      AVERAGE                              |                Worst                           |
-        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
-        //LinkedList<T>      O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
-        //                                         AddLast  O(1)               |                                                |
-        //                                         AddAfter O(1)               |                                                |
+        //Collection                                           AVERAGE                         |                Worst                           |
+        //                   Access                     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
+        //LinkedList<T>      O(n)                       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |    O(n)
+        //                   O(1)-to a node                        AddLast  O(1)               |                                                |
+        //                        itself or its adjacencies        AddAfter O(1)               |                                                |
+        //                                                                                     |                                                |
 
         //LinkedList<T> Represents a doubly linked list.
         //LinkedListNode<T> Represents a node in a LinkedList<T>. This class cannot be inherited.
@@ -1346,6 +1492,9 @@ namespace Collection
         //Collection                      AVERAGE                              |                Worst                           |
         //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
         //Queue<T>           O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //                   O(1)-to the object at the top
+        //  // Mutable 	        Amortized 	Worst Case 	  Immutable 	                Complexity
+        // Queue<T>.Enqueue 	O(1) 	    O(n) 	      ImmutableQueue<T>.Enqueue 	O(1)
         public void CreateQueue()
         {
             Queue<string> numbers = new Queue<string>();
@@ -1391,6 +1540,27 @@ namespace Collection
             queueCopy.Clear();
             Console.WriteLine($"\nqueueCopy.Count = {queueCopy.Count}");
         }
+
+        public void SamplesQueue()
+        {
+            Queue myQ = new Queue();
+            myQ.Enqueue("Hello");
+            myQ.Enqueue("World");
+            myQ.Enqueue("!");
+
+            // Displays the properties and values of the Queue.
+            Console.WriteLine("myQ");
+            Console.WriteLine("\tCount:    {0}", myQ.Count);
+            Console.Write("\tValues:");
+            PrintValues(myQ);
+        }
+
+        public static void PrintValues(IEnumerable myCollection)
+        {
+            foreach (Object obj in myCollection)
+                Console.Write("    {0}", obj);
+            Console.WriteLine();
+        }
     }
     class ReadOnlyCollection
     {
@@ -1433,12 +1603,13 @@ namespace Collection
     }
     class Stacks
     {
-        //                                                             Time Complexities                                        |   Space Complexities
-        //Collection                      AVERAGE                              |                Worst                           |
-        //                   Access     Search     Insert           Deletion   |  Access     Search     Insert     Deletion     |
-        //Stacks<T>          O(n)       O(n)       O(1)             O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
-        //   
-
+        //                                                         Time Complexities                                         |   Space Complexities
+        //Collection                      AVERAGE                           |                Worst                           |
+        //                   Access     Search     Insert        Deletion   |  Access     Search     Insert     Deletion     |
+        //Stacks<T>          O(n)       O(n)       O(1)          O(1)       |  O(n)       O(n)       O(1)       O(1)         |           O(n)
+        //                   O(1)-to the object at the top
+        // Mutable 	        Amortized 	Worst Case 	  Immutable 	            Complexity
+        // Stack<T>.Push 	O(1) 	    O(n) 	      ImmutableStack<T>.Push 	O(1)
         //This feature makes it LIFO data structure.LIFO stands
         //for Last-in-first-out. Here, the element which is placed
         //(inserted or added) last, is accessed first.In stack terminology,
@@ -1488,6 +1659,28 @@ namespace Collection
             Console.WriteLine("\nstack2.Clear()");
             stack2.Clear();
             Console.WriteLine($"\nnstack2.Count = {stack2.Count}");
+        }
+
+        public void SamplesStack()
+        {
+            // Creates and initializes a new Stack.
+            Stack myStack = new Stack();
+            myStack.Push("Hello");
+            myStack.Push("World");
+            myStack.Push("!");
+
+            // Displays the properties and values of the Stack.
+            Console.WriteLine("myStack");
+            Console.WriteLine("\tCount:    {0}", myStack.Count);
+            Console.Write("\tValues:");
+            PrintValues(myStack);
+        }
+
+        public static void PrintValues(IEnumerable myCollection)
+        {
+            foreach (Object obj in myCollection)
+                Console.Write("    {0}", obj);
+            Console.WriteLine();
         }
     }
     class SortedDictionarys
@@ -1713,11 +1906,16 @@ namespace Collection
     }
     class SortedLists
     {
-        //--------------------------
-        //                                                                  Time Complexities                                                    |   Space Complexities
-        //Collection                      AVERAGE                                  |                Worst                                        |
-        //                   Access     Search     Insert     Deletion     Add     |  Access     Search     Insert     Deletion     Add          |
-        //HashSet<T>         O(n)       O(n)       O(1)       O(1)         O(1)    |  O(n)       O(n)       O(1)       O(1)         O(n)         |        O(n)
+        //                                                                  Time Complexities                                                                                                                 |   Space Complexities
+        //Collection                                                              AVERAGE                                                       |                Worst                                        |
+        //                   Access                     Search     Insert               Deletion            Add                                 |  Access     Search     Insert     Deletion     Add          |
+        //SortedList<T>      O(1) access by index       O(log n)   O(n)                 O(n)                O(n)       O(n) unsorted data       |                                                             |        
+        //                   O(log n) access by key                O(log n) at the end  O(log n)at the end
+        //                   O(log n) if the key is 
+        //                            in the list 
+        //                   O(log n) read/write
+        //                   O(n) if the key is 
+        //                       not in the list  
         //
         public void Start()
         {
@@ -2033,7 +2231,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new ParallelCollection().Start();
+            new ImmutableStacks().Start();
         }
     }
 }
