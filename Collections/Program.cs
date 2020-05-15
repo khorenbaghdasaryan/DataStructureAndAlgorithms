@@ -202,6 +202,157 @@ namespace Collection
 
         }
     }
+    class BlockingCollections
+    {
+        class BlockingCollectionDemo
+        {
+            static async Task Start()
+            {
+                await AddTakeDemo.BC_AddTakeCompleteAdding();
+                TryTakeDemo.BC_TryTake();
+                FromToAnyDemo.BC_FromToAny();
+                await ConsumingEnumerableDemo.BC_GetConsumingEnumerable();
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+            }
+        }
+        class AddTakeDemo
+        {
+            // Demonstrates:
+            //      BlockingCollection<T>.Add()
+            //      BlockingCollection<T>.Take()
+            //      BlockingCollection<T>.CompleteAdding()
+            public static async Task BC_AddTakeCompleteAdding()
+            {
+                using (BlockingCollection<int> bc = new BlockingCollection<int>())
+                {
+                    // Spin up a Task to populate the BlockingCollection
+                    using (Task t1 = Task.Run(() =>
+                    {
+                        bc.Add(1);
+                        bc.Add(2);
+                        bc.Add(3);
+                        bc.CompleteAdding();
+                    }))
+                    {
+                        // Spin up a Task to consume the BlockingCollection
+                        using (Task t2 = Task.Run(() =>
+                        {
+                            try
+                            {
+                                // Consume consume the BlockingCollection
+                                while (true) Console.WriteLine(bc.Take());
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // An InvalidOperationException means that Take() was called on a completed collection
+                                Console.WriteLine("That's All!");
+                            }
+                        }))
+                        {
+                            await Task.WhenAll(t1, t2);
+                        }
+                    }
+                }
+            }
+        }
+        class TryTakeDemo
+        {
+            // Demonstrates:
+            //      BlockingCollection<T>.Add()
+            //      BlockingCollection<T>.CompleteAdding()
+            //      BlockingCollection<T>.TryTake()
+            //      BlockingCollection<T>.IsCompleted
+            public static void BC_TryTake()
+            {
+                // Construct and fill our BlockingCollection
+                using (BlockingCollection<int> bc = new BlockingCollection<int>())
+                {
+                    int NUMITEMS = 10000;
+                    for (int i = 0; i < NUMITEMS; i++) bc.Add(i);
+                    bc.CompleteAdding();
+                    int outerSum = 0;
+
+                    // Delegate for consuming the BlockingCollection and adding up all items
+                    Action action = () =>
+                    {
+                        int localItem;
+                        int localSum = 0;
+
+                        while (bc.TryTake(out localItem)) localSum += localItem;
+                        Interlocked.Add(ref outerSum, localSum);
+                    };
+
+                    // Launch three parallel actions to consume the BlockingCollection
+                    Parallel.Invoke(action, action, action);
+
+                    Console.WriteLine("Sum[0..{0}) = {1}, should be {2}", NUMITEMS, outerSum, ((NUMITEMS * (NUMITEMS - 1)) / 2));
+                    Console.WriteLine("bc.IsCompleted = {0} (should be true)", bc.IsCompleted);
+                }
+            }
+        }
+        class FromToAnyDemo
+        {
+            // Demonstrates:
+            //      Bounded BlockingCollection<T>
+            //      BlockingCollection<T>.TryAddToAny()
+            //      BlockingCollection<T>.TryTakeFromAny()
+            public static void BC_FromToAny()
+            {
+                BlockingCollection<int>[] bcs = new BlockingCollection<int>[2];
+                bcs[0] = new BlockingCollection<int>(5); // collection bounded to 5 items
+                bcs[1] = new BlockingCollection<int>(5); // collection bounded to 5 items
+
+                // Should be able to add 10 items w/o blocking
+                int numFailures = 0;
+                for (int i = 0; i < 10; i++)
+                {
+                    if (BlockingCollection<int>.TryAddToAny(bcs, i) == -1) numFailures++;
+                }
+                Console.WriteLine("TryAddToAny: {0} failures (should be 0)", numFailures);
+
+                // Should be able to retrieve 10 items
+                int numItems = 0;
+                int item;
+                while (BlockingCollection<int>.TryTakeFromAny(bcs, out item) != -1) numItems++;
+                Console.WriteLine("TryTakeFromAny: retrieved {0} items (should be 10)", numItems);
+            }
+        }
+        class ConsumingEnumerableDemo
+        {
+            // Demonstrates:
+            //      BlockingCollection<T>.Add()
+            //      BlockingCollection<T>.CompleteAdding()
+            //      BlockingCollection<T>.GetConsumingEnumerable()
+            public static async Task BC_GetConsumingEnumerable()
+            {
+                using (BlockingCollection<int> bc = new BlockingCollection<int>())
+                {
+                    // Kick off a producer task
+                    await Task.Run(async () =>
+                    {
+                        for (int i = 0; i < 10; i++)
+                        {
+                            bc.Add(i);
+                            await Task.Delay(100); // sleep 100 ms between adds
+                        }
+
+                        // Need to do this to keep foreach below from hanging
+                        bc.CompleteAdding();
+                    });
+
+                    // Now consume the blocking collection with foreach.
+                    // Use bc.GetConsumingEnumerable() instead of just bc because the
+                    // former will block waiting for completion and the latter will
+                    // simply take a snapshot of the current state of the underlying collection.
+                    foreach (var item in bc.GetConsumingEnumerable())
+                    {
+                        Console.WriteLine(item);
+                    }
+                }
+            }
+        }
+    }//fast when bounding and blocking semantics are required
     class ConcurrentBags//fast when mixed producer-consumer scenarios
     {
         // In mixed producer-consumer scenarios, ConcurrentBag<T> is generally
@@ -905,6 +1056,20 @@ namespace Collection
             Console.WriteLine();
         }
     }
+    class ImmutableArrays
+    {
+        // Operation 	ImmutableArray<T>  	ImmutableList<T>  	Comments
+        //              Complexity          Complexity
+        // Item         O(1)                O(log n)            Directly index into the underlying array
+        // Add()        O(n)                O(log n)            Requires creating a new array
+    }
+    class ImmutableLists
+    {
+        // Operation 	ImmutableArray<T>  	ImmutableList<T>  	Comments
+        //              Complexity          Complexity
+        // Item         O(1)                O(log n)            Directly index into the underlying array
+        // Add()        O(n)                O(log n)            Requires creating a new array
+    }
     class ImmutableQueues
     {
         public void Start()
@@ -922,6 +1087,22 @@ namespace Collection
             foreach (var item in immutableStack)
                 Console.WriteLine(item);
         }
+    }
+    class ImmutableHashSets
+    {
+
+    }
+    class ImmutableDictionarys
+    {
+
+    }
+    class ImmutableSortedSets
+    {
+
+    }
+    class ImmutableSortedDictionarys
+    {
+
     }
     class Int16Collection : CollectionBase
     {
@@ -1056,6 +1237,230 @@ namespace Collection
             while (myEnumerator.MoveNext())
                 Console.WriteLine("   {0}", myEnumerator.Current);
             Console.WriteLine();
+        }
+    }
+
+    class KeyedCollections
+    {
+        public class SimpleOrder : KeyedCollection<int, OrderItem>
+        {
+
+            // This is the only method that absolutely must be overridden,
+            // because without it the KeyedCollection cannot extract the
+            // keys from the items. The input parameter type is the
+            // second generic type argument, in this case OrderItem, and
+            // the return value type is the first generic type argument,
+            // in this case int.
+            //
+            protected override int GetKeyForItem(OrderItem item)
+            {
+                // In this example, the key is the part number.
+                return item.PartNumber;
+            }
+        }
+
+        // This class represents a simple line item in an order. All the
+        // values are immutable except quantity.
+        //
+        public class OrderItem
+        {
+            public readonly int PartNumber;
+            public readonly string Description;
+            public readonly double UnitPrice;
+
+            private int _quantity = 0;
+
+            public OrderItem(int partNumber, string description,
+                int quantity, double unitPrice)
+            {
+                this.PartNumber = partNumber;
+                this.Description = description;
+                this.Quantity = quantity;
+                this.UnitPrice = unitPrice;
+            }
+
+            public int Quantity
+            {
+                get { return _quantity; }
+                set
+                {
+                    if (value < 0)
+                        throw new ArgumentException("Quantity cannot be negative.");
+
+                    _quantity = value;
+                }
+            }
+
+            public override string ToString()
+            {
+                return String.Format(
+                    "{0,9} {1,6} {2,-12} at {3,8:#,###.00} = {4,10:###,###.00}",
+                    PartNumber, _quantity, Description, UnitPrice,
+                    UnitPrice * _quantity);
+            }
+        }
+
+        public void Start()
+        {
+            SimpleOrder weekly = new SimpleOrder();
+
+            // The Add method, inherited from Collection, takes OrderItem.
+            //
+            weekly.Add(new OrderItem(110072674, "Widget", 400, 45.17));
+            weekly.Add(new OrderItem(110072675, "Sprocket", 27, 5.3));
+            weekly.Add(new OrderItem(101030411, "Motor", 10, 237.5));
+            weekly.Add(new OrderItem(110072684, "Gear", 175, 5.17));
+
+            Display(weekly);
+
+            Console.WriteLine($"\nContains(101030411): {weekly.Contains(101030411)}");
+
+            // The default Item property of KeyedCollection takes a key.
+            //
+            Console.WriteLine($"\nweekly[101030411].Description: {weekly[101030411].Description}");
+
+            // The Remove method of KeyedCollection takes a key.
+            //
+            Console.WriteLine("\nRemove(101030411)");
+            weekly.Remove(101030411);
+            Display(weekly);
+
+            // The Insert method, inherited from Collection, takes an
+            // index and an OrderItem.
+            //
+            Console.WriteLine("\nInsert(2, New OrderItem(...))");
+            weekly.Insert(2, new OrderItem(111033401, "Nut", 10, .5));
+            Display(weekly);
+
+            // The default Item property is overloaded. One overload comes
+            // from KeyedCollection<int, OrderItem>; that overload
+            // is read-only, and takes Integer because it retrieves by key.
+            // The other overload comes from Collection<OrderItem>, the
+            // base class of KeyedCollection<int, OrderItem>; it
+            // retrieves by index, so it also takes an Integer. The compiler
+            // uses the most-derived overload, from KeyedCollection, so the
+            // only way to access SimpleOrder by index is to cast it to
+            // Collection<OrderItem>. Otherwise the index is interpreted
+            // as a key, and KeyNotFoundException is thrown.
+            //
+
+            Collection<OrderItem> coweekly = weekly;
+            Console.WriteLine($"\ncoweekly[2].Description: {coweekly[2].Description}" );
+
+            Console.WriteLine("\ncoweekly[2] = new OrderItem(...)");
+            coweekly[2] = new OrderItem(127700026, "Crank", 27, 5.98);
+
+            OrderItem temp = coweekly[2];
+
+            // The IndexOf method inherited from Collection<OrderItem>
+            // takes an OrderItem instead of a key
+            //
+            Console.WriteLine($"\nIndexOf(temp): {weekly.IndexOf(temp)}" );
+
+            // The inherited Remove method also takes an OrderItem.
+            //
+            Console.WriteLine("\nRemove(temp)");
+            weekly.Remove(temp);
+            Display(weekly);
+
+            Console.WriteLine("\nRemoveAt(0)");
+            weekly.RemoveAt(0);
+            Display(weekly);
+
+            static void Display(SimpleOrder order)
+            {
+                Console.WriteLine();
+                foreach (OrderItem item in order)
+                    Console.WriteLine(item);
+            }
+        }
+    }
+       
+    
+    class Lists
+    {
+        // Simple business object. A PartId is used to identify the type of part
+        // but the part name can change.
+        public class Part : IEquatable<Part>
+        {
+            public string PartName { get; set; }
+
+            public int PartId { get; set; }
+
+            public override string ToString()
+            {
+                return "ID: " + PartId + "   Name: " + PartName;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj == null) 
+                    return false;
+                Part objAsPart = obj as Part;
+                if (objAsPart == null) 
+                    return false;
+                else 
+                    return Equals(objAsPart);
+            }
+            public override int GetHashCode()
+            {
+                return PartId;
+            }
+            public bool Equals(Part other)
+            {
+                if (other == null) 
+                    return false;
+                return (this.PartId.Equals(other.PartId));
+            }
+            // Should also override == and != operators.
+        }
+        public void Start()
+        {
+            // Create a list of parts.
+            List<Part> parts = new List<Part>();
+
+            // Add parts to the list.
+            parts.Add(new Part() { PartName = "crank arm", PartId = 1234 });
+            parts.Add(new Part() { PartName = "chain ring", PartId = 1334 });
+            parts.Add(new Part() { PartName = "regular seat", PartId = 1434 });
+            parts.Add(new Part() { PartName = "banana seat", PartId = 1444 });
+            parts.Add(new Part() { PartName = "cassette", PartId = 1534 });
+            parts.Add(new Part() { PartName = "shift lever", PartId = 1634 });
+
+            // Write out the parts in the list. This will call the overridden ToString method
+            // in the Part class.
+            Console.WriteLine();
+            foreach (Part aPart in parts)
+                Console.WriteLine(aPart);
+
+            // Check the list for part #1734. This calls the IEquatable.Equals method
+            // of the Part class, which checks the PartId for equality.
+            Console.WriteLine($"\nContains(\"1734\"): {parts.Contains(new Part { PartId = 1734, PartName = "" })}");
+
+            // Insert a new item at position 2.
+            Console.WriteLine("\nInsert(2, \"1834\")");
+            parts.Insert(2, new Part() { PartName = "brake lever", PartId = 1834 });
+
+            //Console.WriteLine();
+            foreach (Part aPart in parts)
+                Console.WriteLine(aPart);
+
+            Console.WriteLine($"\nParts[3]: {parts[3]}");
+
+            Console.WriteLine("\nRemove(\"1534\")");
+            parts.Remove(new Part() { PartId = 1534, PartName = "cogs" });
+
+            Console.WriteLine();
+
+            foreach (Part aPart in parts)
+                Console.WriteLine(aPart);
+
+            Console.WriteLine("\nRemoveAt(3)");
+            // This will remove the part at index 3.
+            parts.RemoveAt(3);
+
+            Console.WriteLine();
+            foreach (Part aPart in parts)
+                Console.WriteLine(aPart);
         }
     }
     class LinearSearches
@@ -1688,6 +2093,8 @@ namespace Collection
     }
     class SortedDictionarys
     {
+        // Represents a collection of key/value pairs that are sorted on the key.
+
         public void Start()
         {
             // Create a new sorted dictionary of strings, with string
@@ -2234,7 +2641,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new ImmutableStacks().Start();
+            new KeyedCollections().Start();
         }
     }
 }
