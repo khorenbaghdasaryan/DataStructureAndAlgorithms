@@ -820,7 +820,7 @@ namespace Collection
         //Hashtable          N/A        O(1)       O(1)             O(1)       |  N/A        O(n)       O(n)       O(n)         |           O(n)
         //                                         AddLast  O(1)               |                                                |
         //                                         AddAfter O(1)               |                                                |
-        public void CreateHashtable()
+        public void Start()
         {
             // Create a new hash table.
             Hashtable openWith = new Hashtable();
@@ -955,7 +955,7 @@ namespace Collection
 
 
         }
-    }
+    }// sorts its elements by their hash codes
     class HybridDictionarys
     {
         public void Start()
@@ -1257,7 +1257,6 @@ namespace Collection
                 return item.PartNumber;
             }
         }
-
         // This class represents a simple line item in an order. All the
         // values are immutable except quantity.
         //
@@ -1277,7 +1276,6 @@ namespace Collection
                 this.Quantity = quantity;
                 this.UnitPrice = unitPrice;
             }
-
             public int Quantity
             {
                 get { return _quantity; }
@@ -1289,7 +1287,6 @@ namespace Collection
                     _quantity = value;
                 }
             }
-
             public override string ToString()
             {
                 return String.Format(
@@ -1298,7 +1295,6 @@ namespace Collection
                     UnitPrice * _quantity);
             }
         }
-
         public void Start()
         {
             SimpleOrder weekly = new SimpleOrder();
@@ -1373,7 +1369,7 @@ namespace Collection
                     Console.WriteLine(item);
             }
         }
-    }       
+    }// One value with embedded key
     class Lists
     {
         // Simple business object. A PartId is used to identify the type of part
@@ -1788,7 +1784,7 @@ namespace Collection
                 Console.WriteLine($"   [{i}]     {myCol.GetKey(i),-10} { myCol.Get(i)}");
             Console.WriteLine();
         }
-    }
+    }// One key and multiple values
     class OrderedDictionarys
     {
         public void Start()
@@ -2760,7 +2756,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new KeyedCollections().Start();
+            new SortedLists().Start();
         }
     }
 }
