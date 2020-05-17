@@ -353,7 +353,7 @@ namespace Collection
             }
         }
     }//fast when bounding and blocking semantics are required
-    class ConcurrentBags//fast when mixed producer-consumer scenarios
+    class ConcurrentBags
     {
         // In mixed producer-consumer scenarios, ConcurrentBag<T> is generally
         // much faster and more scalable than any other concurrent collection 
@@ -397,7 +397,7 @@ namespace Collection
             if (cd.TryPeek(out unexpectedItem))
                 Console.WriteLine("Found an item in the bag when it should be empty");
         }
-    }
+    } //provides fast multi-threaded insertion for unordered data, fast when mixed producer-consumer scenarios
     class ConcurrentDictionarys
     {
         //For very large ConcurrentDictionary<TKey, TValue> objects, you can increase 
@@ -764,7 +764,7 @@ namespace Collection
             if (!openWith.ContainsKey("doc"))
                 Console.WriteLine("Key \"doc\" is not found.");
         }
-    }
+    }// provides faster lookup than the SortedDictionary<TKey,TValue>
     class HashSets
     {
         //                                                          Time Complexities                                                              |   Space Complexities
@@ -1727,7 +1727,7 @@ namespace Collection
                 Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}");
             Console.WriteLine();
         }
-    }
+    }//is faster than Hashtable for small collections (10 items or fewer)
     class NameValueCollections
     {
         // Represents a collection of associated String keys and String values that 
@@ -2465,7 +2465,7 @@ namespace Collection
                 Console.WriteLine("Key \"doc\" is not found.");
             }
         }
-    }
+    }// sort their elements by the key, consumes less memory
     class StringCollections
     {
         // Elements in this collection can be accessed using an integer index.
@@ -2645,7 +2645,7 @@ namespace Collection
                 Console.WriteLine($"   {i,-5} {myKeys[i],-25} {myCol[myKeys[i]]}" );
             Console.WriteLine();
         }
-    }
+    }// sort their elements by the key, offers better performance 
 
     ////class Dictionarys2
     //{
