@@ -2942,16 +2942,13 @@ namespace Collection
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             int n = inputArray.Length;
-            for (int i = 1; i < n; ++i)
+            for (int i = 1; i < n - 1; ++i)
             {
                 int smallest = i;
                 for (int j = i + 1; j < n; j++)
-                {
                     if (inputArray[j] < inputArray[smallest])
-                    {
                         smallest = j;
-                    }
-                }
+
                 int temp = inputArray[smallest];
                 inputArray[smallest] = inputArray[i];
                 inputArray[i] = temp;
@@ -2961,6 +2958,112 @@ namespace Collection
             Console.WriteLine(stopwatch.Elapsed);
             return inputArray;
         }
+
+        public int[] MergeSort(int[] inputArray)
+        {
+            if (inputArray.Count() <= 1)
+                return inputArray;
+
+            int[] left;
+            int[] right;
+            int[] result = new int[inputArray.Length];
+            //As this is a recursive algorithm, we need to have a base 
+            //case to avoid an infinite recursion and therfore a stackoverflow
+            if (inputArray.Length <= 1)
+                return inputArray;
+
+            // The exact midpoint of our array  
+            int midPoint = inputArray.Length / 2;
+
+            // Will represent our 'left' array
+             left = new int[midPoint];
+
+            //if array has an even number of elements,
+            //the left and right array will have the same number of 
+            //elements
+            if (inputArray.Length % 2 == 0)
+                right = new int[midPoint];
+            //if array has an odd number of elements,
+            //the right array will have one more element than left
+            else
+                right = new int[midPoint + 1];
+
+            //populate left array
+            for (int i = 0; i < midPoint; i++)
+                left[i] = inputArray[i];
+
+            //populate right array   
+            int x = 0;
+
+            //We start our index from the midpoint, as we have
+            //already populated the left array from 0 to  midpont
+            for (int i = midPoint; i < inputArray.Length; i++)
+            {
+                right[x] = inputArray[i];
+                x++;
+            }
+
+            //Recursively sort the left array
+            left = MergeSort(left);
+
+            //Recursively sort the right array
+            right = MergeSort(right);
+
+            //Merge our two sorted arrays
+            result = Merge(left, right);
+
+          
+            int[] Merge(int[] left, int[] right)
+            {
+                int resultLength = right.Length + left.Length;
+                int[] result = new int[resultLength];
+                //
+                int indexLeft = 0, indexRight = 0, indexResult = 0;
+                //while either array still has an element
+                while (indexLeft < left.Length || indexRight < right.Length)
+                {
+                    //if both arrays have elements  
+                    if (indexLeft < left.Length && indexRight < right.Length)
+                    {
+                        //If item on left array is less than item on right array, add that item to the result array 
+                        if (left[indexLeft] <= right[indexRight])
+                        {
+                            result[indexResult] = left[indexLeft];
+                            indexLeft++;
+                            indexResult++;
+                        }
+                        // else the item in the right array wll be added to the results array
+                        else
+                        {
+                            result[indexResult] = right[indexRight];
+                            indexRight++;
+                            indexResult++;
+                        }
+                    }
+                    //if only the left array still has elements, add all its items to the results array
+                    else if (indexLeft < left.Length)
+                    {
+                        result[indexResult] = left[indexLeft];
+                        indexLeft++;
+                        indexResult++;
+                    }
+                    //if only the right array still has elements, add all its items to the results array
+                    else if (indexRight < right.Length)
+                    {
+                        result[indexResult] = right[indexRight];
+                        indexRight++;
+                        indexResult++;
+                    }
+                }
+                return result;
+            }
+            
+            return result;
+
+
+           
+        }
+        
     }
    
     class Program
@@ -2969,13 +3072,14 @@ namespace Collection
         static void Main(string[] args)
         {
             int[] arr = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
-            new SortAlgorithms().BubbleSort(arr);
-            new SortAlgorithms().BubbleSort(arr);
-            new SortAlgorithms().InsertionSort(arr);
-            new SortAlgorithms().InsertionSort2(arr);
-            new SortAlgorithms().SelectionSort(arr);
-
-
+            //new SortAlgorithms().BubbleSort(arr);
+            //new SortAlgorithms().BubbleSort(arr);
+            //new SortAlgorithms().InsertionSort(arr);
+            //new SortAlgorithms().InsertionSort2(arr);
+            //new SortAlgorithms().SelectionSort(arr);
+            int [] inputArray = new SortAlgorithms().MergeSort(arr);
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
         }
     }
 }
