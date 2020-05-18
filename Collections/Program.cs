@@ -2202,7 +2202,7 @@ namespace Collection
                 Console.WriteLine("Key \"doc\" is not found.");
             }
         }
-    }
+    }// SortedList(TKey, TValue) uses less memory than SortedDictionary(TKey, TValue), SortedList(TKey, TValue) uses less memory than SortedDictionary(TKey, TValue)
     class SortedSets
     {
         //                                                                  Time Complexities                                                    |   Space Complexities
@@ -2465,7 +2465,7 @@ namespace Collection
                 Console.WriteLine("Key \"doc\" is not found.");
             }
         }
-    }// sort their elements by the key, consumes less memory
+    }// sort their elements by the key, consumes less memory,If the list is populated all at once from sorted data, SortedList(TKey, TValue) is faster than SortedDictionary(TKey, TValue).
     class StringCollections
     {
         // Elements in this collection can be accessed using an integer index.
@@ -2751,12 +2751,76 @@ namespace Collection
     //            Console.WriteLine("Key \"doc\" is not found.");
     //    }
     //}
+    static class SearchAlgorithms
+    {
+        public static object BinarySearchIterative(int[] list, int key)
+        {
+            int min = 0;
+            int max = list.Length - 1;
+            while (min <= max)
+            {
+                int mid = (min + max) / 2;
+                if (key == list[mid])
+                {
+                    return ++mid;
+                }
+                else if (key < list[mid])
+                {
+                    max = mid - 1;
+                }
+                else
+                {
+                    min = mid + 1;
+                }
+            }
+            return "Null";
+        }
+        public static int LinearSearch(int[] list, int data)
+        {
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (data == list[i]) return i;
+            }
+
+            return -1;
+        }
+        public static int InterpolationSearch(int[] list, int data)
+        {
+            int lo = 0;
+            int mid = -1;
+            int hi = list.Length - 1;
+            int index = -1;
+
+            while (lo <= hi)
+            {
+                mid = (int)(lo + (((double)(hi - lo) / (list[hi] - list[lo])) * (data - list[lo])));
+
+                if (list[mid] == data)
+                {
+                    index = mid;
+                    break;
+                }
+                else
+                {
+                    if (list[mid] < data)
+                        lo = mid + 1;
+                    else
+                        hi = mid - 1;
+                }
+            }
+
+            return index;
+        }
+
+    }
+   
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
             new SortedLists().Start();
+            
         }
     }
 }
