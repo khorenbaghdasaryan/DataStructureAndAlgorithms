@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Collection
 {
@@ -2751,9 +2752,9 @@ namespace Collection
     //            Console.WriteLine("Key \"doc\" is not found.");
     //    }
     //}
-    static class SearchAlgorithms
+    class SearchAlgorithms
     {
-        public static object BinarySearchIterative(int[] list, int key)
+        public  int BinarySearch(int[] list, int key)
         {
             int min = 0;
             int max = list.Length - 1;
@@ -2773,9 +2774,9 @@ namespace Collection
                     min = mid + 1;
                 }
             }
-            return "Null";
+            return -1;
         }
-        public static int LinearSearch(int[] list, int data)
+        public  int LinearSearch(int[] list, int data)
         {
             for (int i = 0; i < list.Length; i++)
             {
@@ -2784,7 +2785,7 @@ namespace Collection
 
             return -1;
         }
-        public static int InterpolationSearch(int[] list, int data)
+        public  int InterpolationSearch(int[] list, int data)
         {
             int lo = 0;
             int mid = -1;
@@ -2811,7 +2812,155 @@ namespace Collection
 
             return index;
         }
+        public  int JumpSearch(int[] arr, int x)
+        {
+            int n = arr.Length;
 
+            // Finding block size to be jumped 
+            int step = (int)Math.Floor(Math.Sqrt(n));
+
+            // Finding the block where element is 
+            // present (if it is present) 
+            int prev = 0;
+            while (arr[Math.Min(step, n) - 1] < x)
+            {
+                prev = step;
+                step += (int)Math.Floor(Math.Sqrt(n));
+                if (prev >= n)
+                    return -1;
+            }
+
+            // Doing a linear search for x in block 
+            // beginning with prev. 
+            while (arr[prev] < x)
+            {
+                prev++;
+
+                // If we reached next block or end of 
+                // array, element is not present. 
+                if (prev == Math.Min(step, n))
+                    return -1;
+            }
+
+            // If element is found 
+            if (arr[prev] == x)
+                return prev;
+
+            return -1;
+        }
+        ////public int ExponentialSearch(int[] arr, int index)
+        //{
+        //    int arrLength = arr.Length;
+
+        //    // If x is present at  
+        //    // first location itself 
+        //    if (arr[0] == index)
+        //        return 0;
+
+        //    // Find range for binary search  
+        //    // by repeated doubling 
+        //    int i = 1;
+        //    while (i < arrLength && arr[i] <= index)
+        //        i = i * 2;
+
+        //    return BinarySearch();
+        //}
+    }
+    class SortAlgorithms
+    {
+        public int[] BubbleSort(int[] inputArray)
+        {
+            int index;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            for (int write = 0; write < inputArray.Length; write++)
+            {
+                for (int sort = 0; sort < inputArray.Length - 1; sort++)
+                {
+                    if (inputArray[sort] > inputArray[sort + 1])
+                    {
+                        index = inputArray[sort + 1];
+                        inputArray[sort + 1] = inputArray[sort];
+                        inputArray[sort] = index;
+                    }
+                }
+            }
+            
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
+        }
+        public int[] InsertionSort(int[] inputArray)
+        {
+            int index = 0, size = inputArray.Length;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            for (int i = 1; i < size; i++)
+            {
+                int val = inputArray[i];
+                for (int j = i - 1; j >= 0 && index != 1;)
+                {
+                    if (val < inputArray[j])
+                    {
+                        inputArray[j + 1] = inputArray[j];
+                        j--;
+                        inputArray[j + 1] = val;
+                    }
+                    else index = 1;
+                }
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
+        }
+        public int[] InsertionSort2(int[] inputArray)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int n = inputArray.Length;
+            for (int i = 1; i < n; ++i)
+            {
+                int key = inputArray[i];
+                int j = i - 1;
+
+                // Move elements of arr[0..i-1], 
+                // that are greater than key, 
+                // to one position ahead of 
+                // their current position 
+                while (j >= 0 && inputArray[j] > key)
+                {
+                    inputArray[j + 1] = inputArray[j];
+                    j = j - 1;
+                }
+                inputArray[j + 1] = key;
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
+        }
+        public int[] SelectionSort(int[] inputArray)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int n = inputArray.Length;
+            for (int i = 1; i < n; ++i)
+            {
+                int smallest = i;
+                for (int j = i + 1; j < n; j++)
+                {
+                    if (inputArray[j] < inputArray[smallest])
+                    {
+                        smallest = j;
+                    }
+                }
+                int temp = inputArray[smallest];
+                inputArray[smallest] = inputArray[i];
+                inputArray[i] = temp;
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
+        }
     }
    
     class Program
@@ -2819,8 +2968,14 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            new SortedLists().Start();
-            
+            int[] arr = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
+            new SortAlgorithms().BubbleSort(arr);
+            new SortAlgorithms().BubbleSort(arr);
+            new SortAlgorithms().InsertionSort(arr);
+            new SortAlgorithms().InsertionSort2(arr);
+            new SortAlgorithms().SelectionSort(arr);
+
+
         }
     }
 }
