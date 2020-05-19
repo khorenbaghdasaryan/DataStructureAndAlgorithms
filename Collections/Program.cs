@@ -3292,8 +3292,7 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            int[] inputArray = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
-            new SortAlgorithms().SelectionSort(inputArray);//error
+            
         }
     }
 }
