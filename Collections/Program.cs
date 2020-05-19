@@ -2941,11 +2941,11 @@ namespace Collection
         public int[] SelectionSort(int[] inputArray)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
-            int n = inputArray.Length;
-            for (int i = 1; i < n - 1; ++i)
+            int length = inputArray.Length;
+            for (int i = 0; i < length - 1; ++i)
             {
                 int smallest = i;
-                for (int j = i + 1; j < n; j++)
+                for (int j = i + 1; j < length; j++)
                     if (inputArray[j] < inputArray[smallest])
                         smallest = j;
 
@@ -2953,7 +2953,7 @@ namespace Collection
                 inputArray[smallest] = inputArray[i];
                 inputArray[i] = temp;
             }
-            for (int i = 0; i < inputArray.Length; i++)
+            for (int i = 0; i < length; i++)
                 Console.Write(inputArray[i] + " ");
             Console.WriteLine(stopwatch.Elapsed);
             return inputArray;
@@ -3244,26 +3244,56 @@ namespace Collection
                 Console.Write(inputArray[i] + " ");
                 return inputArray;
         }
+        public int[] CountingSort(int[] inputArray)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int[] sortedArray = new int[inputArray.Length];
+
+            // find smallest and largest value
+            int minVal = inputArray[0];
+            int maxVal = inputArray[0];
+
+            for (int i = 1; i < inputArray.Length; i++)
+            {
+                if (inputArray[i] < minVal) 
+                    minVal = inputArray[i];
+                else if (inputArray[i] > maxVal) 
+                    maxVal = inputArray[i];
+            }
+
+            // init array of frequencies
+            int[] counts = new int[maxVal - minVal + 1];
+
+            // init the frequencies
+            for (int i = 0; i < inputArray.Length; i++)
+                counts[inputArray[i] - minVal]++;
+
+            // recalculate
+            counts[0]--;
+
+            for (int i = 1; i < counts.Length; i++)
+                counts[i] = counts[i] + counts[i - 1];
+
+            // Sort the array
+            for (int i = inputArray.Length - 1; i >= 0; i--)
+                sortedArray[counts[inputArray[i] - minVal]--] = inputArray[i];
+
+            Console.WriteLine();
+            foreach (int aa in sortedArray)
+                Console.Write(aa + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return sortedArray;
+        }
 
     }
-   
+
     class Program
     {
         [Obsolete]
         static void Main(string[] args)
         {
             int[] inputArray = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
-            //new SortAlgorithms().BubbleSort(arr);
-            //new SortAlgorithms().InsertionSort(arr);
-            //new SortAlgorithms().InsertionSort2(arr);
-            //new SortAlgorithms().SelectionSort(arr);//error
-            //new SortAlgorithms().MergeSort(inputArray);
-            //for (int i = 0; i < inputArray.Length; i++)
-            //    Console.Write(inputArray[i] + " ");
-            //new SortAlgorithms().ShellSort(arr);
-            //new SortAlgorithms().QuickSort(arr);
-            //new SortAlgorithms().BucketSort(inputArray);
-            new SortAlgorithms().RadixSort(inputArray);
+            new SortAlgorithms().SelectionSort(inputArray);//error
         }
     }
 }
