@@ -2958,61 +2958,47 @@ namespace Collection
             Console.WriteLine(stopwatch.Elapsed);
             return inputArray;
         }
-
         public int[] MergeSort(int[] inputArray)
         {
-            if (inputArray.Count() <= 1)
-                return inputArray;
-
             int[] left;
             int[] right;
             int[] result = new int[inputArray.Length];
-            //As this is a recursive algorithm, we need to have a base 
-            //case to avoid an infinite recursion and therfore a stackoverflow
+            //As this is a recursive algorithm, we need to have a base case to 
+            //avoid an infinite recursion and therfore a stackoverflow
             if (inputArray.Length <= 1)
                 return inputArray;
-
             // The exact midpoint of our array  
             int midPoint = inputArray.Length / 2;
+            //Will represent our 'left' array
+            left = new int[midPoint];
 
-            // Will represent our 'left' array
-             left = new int[midPoint];
-
-            //if array has an even number of elements,
-            //the left and right array will have the same number of 
+            //if array has an even number of elements, the left and right array will have the same number of 
             //elements
             if (inputArray.Length % 2 == 0)
                 right = new int[midPoint];
-            //if array has an odd number of elements,
-            //the right array will have one more element than left
+            //if array has an odd number of elements, the right array will have one more element than left
             else
                 right = new int[midPoint + 1];
-
             //populate left array
             for (int i = 0; i < midPoint; i++)
                 left[i] = inputArray[i];
-
             //populate right array   
             int x = 0;
-
-            //We start our index from the midpoint, as we have
-            //already populated the left array from 0 to  midpont
+            //We start our index from the midpoint, as we have already populated the left array from 0 to  midpont
             for (int i = midPoint; i < inputArray.Length; i++)
             {
                 right[x] = inputArray[i];
                 x++;
             }
-
             //Recursively sort the left array
             left = MergeSort(left);
-
             //Recursively sort the right array
             right = MergeSort(right);
-
             //Merge our two sorted arrays
             result = Merge(left, right);
+            return result;
 
-          
+            //This method will be responsible for combining our two sorted arrays into one giant array
             int[] Merge(int[] left, int[] right)
             {
                 int resultLength = right.Length + left.Length;
@@ -3055,15 +3041,210 @@ namespace Collection
                         indexResult++;
                     }
                 }
+               
                 return result;
             }
             
-            return result;
+        }    
+        //With worst-case time complexity being Ο(n log n), it is one of the most respected algorithms.
+        public int[] ShellSort(int[] inputArray)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int n = inputArray.Length;
 
+            // Start with a big gap, then reduce the gap 
+            for (int gap = n / 2; gap > 0; gap /= 2)
+            {
+                // Do a gapped insertion sort for this gap size. 
+                // The first gap elements a[0..gap-1] are already 
+                // in gapped order keep adding one more element 
+                // until the entire array is gap sorted 
+                for (int i = gap; i < n; i += 1)
+                {
+                    // add a[i] to the elements that have been gap 
+                    // sorted save a[i] in temp and make a hole at 
+                    // position i 
+                    int temp = inputArray[i];
 
-           
+                    // shift earlier gap-sorted elements up until 
+                    // the correct location for a[i] is found 
+                    int j;
+                    for (j = i; j >= gap && inputArray[j - gap] > temp; j -= gap)
+                        inputArray[j] = inputArray[j - gap];
+
+                    // put temp (the original a[i]) in its correct 
+                    // location 
+                    inputArray[j] = temp;
+                }
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
         }
-        
+        public int[] QuickSort(int[] inputArray)
+        {
+            /* The main function that implements QuickSort() 
+            arr[] --> Array to be sorted, 
+            low --> Starting index, 
+            high --> Ending index */
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            void sort(int[] inputArray, int low, int high)
+            {
+                //int low = 0, high = inputArray.Length - 1;
+                if (low < high)
+                {
+
+                    /* pi is partitioning index, arr[pi] is  
+                    now at right place */
+                    int pi = partition(inputArray, low, high);
+
+                    // Recursively sort elements before 
+                    // partition and after partition 
+                    sort(inputArray, low, pi - 1);
+                    sort(inputArray, pi + 1, high);
+                }
+            }
+            
+            /* This function takes last element as pivot, 
+            places the pivot element at its correct 
+            position in sorted array, and places all 
+            smaller (smaller than pivot) to left of 
+            pivot and all greater elements to right 
+            of pivot */
+            int partition(int[] arr, int low, int high)
+            {
+                int pivot = arr[high];
+
+                // index of smaller element 
+                int i = (low - 1);
+                for (int j = low; j < high; j++)
+                {
+                    // If current element is smaller  
+                    // than the pivot 
+                    if (arr[j] < pivot)
+                    {
+                        i++;
+                        // swap arr[i] and arr[j] 
+                        int temp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = temp;
+                    }
+                }
+
+                // swap arr[i+1] and arr[high] (or pivot) 
+                int temp1 = arr[i + 1];
+                arr[i + 1] = arr[high];
+                arr[high] = temp1;
+
+                return i + 1;
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            Console.WriteLine(stopwatch.Elapsed);
+            return inputArray;
+        }
+        public int[] BucketSort(int[] inputArray)
+        {
+            int minValue = inputArray[0];
+            int maxValue = inputArray[0];
+
+            for (int i = 1; i < inputArray.Length; i++)
+            {
+                if (inputArray[i] > maxValue)
+                    maxValue = inputArray[i];
+                if (inputArray[i] < minValue)
+                    minValue = inputArray[i];
+            }
+
+            List<int>[] bucket = new List<int>[maxValue - minValue + 1];
+
+            for (int i = 0; i < bucket.Length; i++)
+            {
+                bucket[i] = new List<int>();
+            }
+
+            for (int i = 0; i < inputArray.Length; i++)
+            {
+                bucket[inputArray[i] - minValue].Add(inputArray[i]);
+            }
+
+            int k = 0;
+            for (int i = 0; i < bucket.Length; i++)
+            {
+                if (bucket[i].Count > 0)
+                {
+                    for (int j = 0; j < bucket[i].Count; j++)
+                    {
+                        inputArray[k] = bucket[i][j];
+                        k++;
+                    }
+                }
+            }
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+            return inputArray;
+        }
+        public int[] RadixSort(int[] inputArray)
+        {
+            int length = inputArray.Length;
+
+            int m = GetMax(inputArray, length);
+
+            // Do counting sort for every digit. Note that instead  
+            // of passing digit number, exp is passed. exp is 10^i  
+            // where i is current digit number  
+            for (int exp = 1; m / exp > 0; exp *= 10)
+                CountSort(inputArray, length, exp);
+
+            int GetMax(int[] inputArray, int length)
+            {
+                int max = inputArray[0];
+                for (int i = 1; i < length; i++)
+                    if (inputArray[i] > max)
+                        max = inputArray[i];
+                return max;
+            }
+
+            // A function to do counting sort of arr[] according to  
+            // the digit represented by exp.  
+            void CountSort(int[] arr, int n, int exp)
+            {
+                int[] output = new int[n]; // output array  
+                int i;
+                int[] count = new int[10];
+
+                //initializing all elements of count to 0 
+                for (i = 0; i < 10; i++)
+                    count[i] = 0;
+
+                // Store count of occurrences in count[]  
+                for (i = 0; i < n; i++)
+                    count[(arr[i] / exp) % 10]++;
+
+                // Change count[i] so that count[i] now contains actual  
+                //  position of this digit in output[]  
+                for (i = 1; i < 10; i++)
+                    count[i] += count[i - 1];
+
+                // Build the output array  
+                for (i = n - 1; i >= 0; i--)
+                {
+                    output[count[(arr[i] / exp) % 10] - 1] = arr[i];
+                    count[(arr[i] / exp) % 10]--;
+                }
+
+                // Copy the output array to arr[], so that arr[] now  
+                // contains sorted numbers according to current digit  
+                for (i = 0; i < n; i++)
+                    arr[i] = output[i];
+            }
+
+            for (int i = 0; i < inputArray.Length; i++)
+                Console.Write(inputArray[i] + " ");
+                return inputArray;
+        }
+
     }
    
     class Program
@@ -3071,15 +3252,18 @@ namespace Collection
         [Obsolete]
         static void Main(string[] args)
         {
-            int[] arr = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
-            //new SortAlgorithms().BubbleSort(arr);
+            int[] inputArray = new int[10] { 23, 9, 85, 12, 99, 34, 60, 15, 100, 1 };
             //new SortAlgorithms().BubbleSort(arr);
             //new SortAlgorithms().InsertionSort(arr);
             //new SortAlgorithms().InsertionSort2(arr);
-            //new SortAlgorithms().SelectionSort(arr);
-            int [] inputArray = new SortAlgorithms().MergeSort(arr);
-            for (int i = 0; i < inputArray.Length; i++)
-                Console.Write(inputArray[i] + " ");
+            //new SortAlgorithms().SelectionSort(arr);//error
+            //new SortAlgorithms().MergeSort(inputArray);
+            //for (int i = 0; i < inputArray.Length; i++)
+            //    Console.Write(inputArray[i] + " ");
+            //new SortAlgorithms().ShellSort(arr);
+            //new SortAlgorithms().QuickSort(arr);
+            //new SortAlgorithms().BucketSort(inputArray);
+            new SortAlgorithms().RadixSort(inputArray);
         }
     }
 }
